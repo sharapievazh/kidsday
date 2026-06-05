@@ -1,29 +1,76 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useApp, KIDS } from "@/lib/app-store";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Your App" },
-      { name: "description", content: "Replace this with a one-sentence description of your app." },
-      { property: "og:title", content: "Your App" },
-      { property: "og:description", content: "Replace this with a one-sentence description of your app." },
+      { title: "QuestKids — Pick a profile" },
+      { name: "description", content: "Choose a profile to start your daily quest." },
     ],
   }),
   component: Index,
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
 function Index() {
+  const { setRole, coinsFor, state } = useApp();
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
+    <div className="px-5 pt-10 pb-10">
+      <div className="text-center">
+        <div className="text-5xl">🎯</div>
+        <h1 className="mt-3 text-3xl font-extrabold">QuestKids</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Daily quests, streaks, and rewards.
+        </p>
+      </div>
+
+      <div className="mt-8 space-y-3">
+        <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+          Who's playing?
+        </p>
+        {(["rosa", "brother"] as const).map((id) => {
+          const k = KIDS[id];
+          return (
+            <Link
+              key={id}
+              to="/kid/$kidId"
+              params={{ kidId: id }}
+              onClick={() => setRole(id)}
+              className="flex items-center gap-4 rounded-3xl border-2 border-border bg-card p-4 transition-all hover:-translate-y-0.5 hover:border-primary"
+            >
+              <div
+                className="flex h-16 w-16 items-center justify-center rounded-2xl text-4xl"
+                style={{ backgroundColor: `color-mix(in oklab, ${k.color} 20%, white)` }}
+              >
+                {k.emoji}
+              </div>
+              <div className="flex-1">
+                <div className="text-xl font-extrabold">{k.name}</div>
+                <div className="text-sm font-bold text-muted-foreground">
+                  🔥 {state.streaks[id].count} day streak · 🪙 {coinsFor(id)}
+                </div>
+              </div>
+              <div className="text-2xl">→</div>
+            </Link>
+          );
+        })}
+
+        <Link
+          to="/parent"
+          onClick={() => setRole("parent")}
+          className="mt-6 flex items-center gap-4 rounded-3xl border-2 border-dashed border-border bg-muted/40 p-4 transition-all hover:border-foreground/30"
+        >
+          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-secondary text-3xl">
+            👤
+          </div>
+          <div className="flex-1">
+            <div className="text-lg font-extrabold">Parent</div>
+            <div className="text-sm font-bold text-muted-foreground">
+              Manage tasks & approve rewards
+            </div>
+          </div>
+          <div className="text-2xl">→</div>
+        </Link>
+      </div>
     </div>
   );
 }
