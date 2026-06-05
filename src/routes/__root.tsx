@@ -50,8 +50,16 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
-      { title: "QuestKids — Daily Tasks for Kids" },
+      { title: "KidsDay — Daily Tasks for Kids" },
       { name: "description", content: "Gamified daily task tracker for kids. Earn coins, build streaks, redeem rewards." },
+      { property: "og:title", content: "KidsDay — Daily Tasks for Kids" },
+      { name: "twitter:title", content: "KidsDay — Daily Tasks for Kids" },
+      { property: "og:description", content: "Gamified daily task tracker for kids. Earn coins, build streaks, redeem rewards." },
+      { name: "twitter:description", content: "Gamified daily task tracker for kids. Earn coins, build streaks, redeem rewards." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/2de06cc2-6b98-4322-bbe1-60198c071aad/id-preview-89f7bf8f--ffba3a03-6578-410b-8e45-0e9adff1d62f.lovable.app-1780641455514.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/2de06cc2-6b98-4322-bbe1-60198c071aad/id-preview-89f7bf8f--ffba3a03-6578-410b-8e45-0e9adff1d62f.lovable.app-1780641455514.png" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { property: "og:type", content: "website" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
