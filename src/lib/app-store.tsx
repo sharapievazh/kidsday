@@ -68,6 +68,39 @@ export type Profile = {
   streak_last_date: string | null;
 };
 
+export type ScheduleType = "school_days" | "holidays" | "always";
+
+export const SCHEDULE_LABEL: Record<ScheduleType, string> = {
+  always: "Always",
+  school_days: "School days",
+  holidays: "Holidays",
+};
+
+// ISO weekday: 1=Mon ... 7=Sun
+export const WEEKDAYS: { n: number; short: string }[] = [
+  { n: 1, short: "Mon" },
+  { n: 2, short: "Tue" },
+  { n: 3, short: "Wed" },
+  { n: 4, short: "Thu" },
+  { n: 5, short: "Fri" },
+  { n: 6, short: "Sat" },
+  { n: 7, short: "Sun" },
+];
+
+export function todayIsoWeekday(): number {
+  const js = new Date().getDay(); // 0=Sun..6=Sat
+  return js === 0 ? 7 : js;
+}
+
+export function isTaskActiveToday(task: Pick<Task, "schedule_type" | "days_of_week">): boolean {
+  const d = todayIsoWeekday();
+  if (!task.days_of_week?.includes(d)) return false;
+  if (task.schedule_type === "always") return true;
+  if (task.schedule_type === "school_days") return d >= 1 && d <= 5;
+  if (task.schedule_type === "holidays") return d === 6 || d === 7;
+  return true;
+}
+
 export type Task = {
   id: string;
   parent_id: string;
@@ -76,6 +109,8 @@ export type Task = {
   category: Category;
   coins: number;
   frequency: Frequency;
+  days_of_week: number[];
+  schedule_type: ScheduleType;
 };
 
 export type Completion = {
