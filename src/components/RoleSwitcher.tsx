@@ -3,7 +3,7 @@ import { Link, useNavigate } from "@tanstack/react-router";
 
 const ROLES: { id: Role; label: string; emoji: string; to: string }[] = [
   { id: "rosa", label: "Rosa", emoji: "🌸", to: "/kid/rosa" },
-  { id: "brother", label: "Brother", emoji: "🦊", to: "/kid/brother" },
+  { id: "brother", label: "Ansar", emoji: "🦊", to: "/kid/brother" },
   { id: "parent", label: "Parent", emoji: "👤", to: "/parent" },
 ];
 
@@ -48,7 +48,7 @@ export function TopBar({
   return (
     <header className="sticky top-0 z-30 flex items-center justify-between border-b border-border bg-card/90 px-4 py-3 backdrop-blur">
       <Link to="/" className="text-xl font-extrabold tracking-tight">
-        🎯 <span className="text-primary">QuestKids</span>
+        <img src="/favicon.png" alt="" className="inline-block h-6 w-6 rounded-md align-[-4px]" /> <span className="text-primary">Kids Day</span>
       </Link>
       <div className="text-sm font-bold text-muted-foreground">{title}</div>
       <div>{rightSlot}</div>

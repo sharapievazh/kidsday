@@ -1,0 +1,13 @@
+{
+  "name": "Kids Day",
+  "short_name": "Kids Day",
+  "description": "Daily quests, streaks, and rewards for kids.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2bb6ff",
+  "icons": [
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/apple-touch-icon.png", "sizes": "1024x1024", "type": "image/png" }
+  ]
+}

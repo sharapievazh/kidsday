@@ -4,7 +4,7 @@ import { useApp, KIDS } from "@/lib/app-store";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "QuestKids — Pick a profile" },
+      { title: "Kids Day — Pick a profile" },
       { name: "description", content: "Choose a profile to start your daily quest." },
     ],
   }),
@@ -16,8 +16,8 @@ function Index() {
   return (
     <div className="px-5 pt-10 pb-10">
       <div className="text-center">
-        <div className="text-5xl">🎯</div>
-        <h1 className="mt-3 text-3xl font-extrabold">QuestKids</h1>
+        <img src="/favicon.png" alt="Kids Day" className="mx-auto h-20 w-20 rounded-2xl shadow-lg" />
+        <h1 className="mt-3 text-3xl font-extrabold">Kids Day</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Daily quests, streaks, and rewards.
         </p>

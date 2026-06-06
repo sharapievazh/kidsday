@@ -18,7 +18,7 @@ import { TopBar } from "@/components/RoleSwitcher";
 export const Route = createFileRoute("/kid/$kidId")({
   head: ({ params }) => ({
     meta: [
-      { title: `${params.kidId === "rosa" ? "Rosa" : "Brother"} — QuestKids` },
+      { title: `${params.kidId === "rosa" ? "Rosa" : "Ansar"} — Kids Day` },
       { name: "description", content: "Your daily quests, coins and rewards." },
     ],
   }),
