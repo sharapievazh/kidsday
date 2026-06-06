@@ -3,15 +3,23 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Pencil, Plus, Trash2, X } from "lucide-react";
 import {
-  useApp,
-  KIDS,
   CATEGORIES,
   CATEGORY_EMOJI,
   categoryToken,
-  type Task,
+  coinsFor,
+  useAddTask,
+  useAllCompletions,
+  useDeleteTask,
+  useKids,
+  useMarkDelivered,
+  useParentProfile,
+  usePurchases,
+  useSession,
+  useTasks,
+  useUpdateTask,
   type Category,
-  type KidId,
   type Frequency,
+  type Task,
 } from "@/lib/app-store";
 import { TopBar } from "@/components/RoleSwitcher";
 
@@ -28,29 +36,47 @@ export const Route = createFileRoute("/parent")({
 type FormState = {
   title: string;
   category: Category;
-  assignee: KidId;
+  assignee_id: string;
   coins: number;
   frequency: Frequency;
 };
 
-const blank: FormState = {
-  title: "",
-  category: "Hygiene",
-  assignee: "rosa",
-  coins: 5,
-  frequency: "daily",
-};
-
 function ParentPage() {
-  const { state, addTask, updateTask, deleteTask, markDelivered, coinsFor } = useApp();
+  const { session } = useSession();
+  const profileQ = useParentProfile(!!session);
+  const parentId = profileQ.data?.id;
+  const kidsQ = useKids(parentId);
+  const tasksQ = useTasks(parentId);
+  const kidIds = (kidsQ.data ?? []).map((k) => k.id);
+  const completionsQ = useAllCompletions(kidIds);
+  const purchasesQ = usePurchases(kidIds);
+
+  const addTask = useAddTask(parentId);
+  const updateTask = useUpdateTask();
+  const deleteTask = useDeleteTask();
+  const markDelivered = useMarkDelivered();
+
+  const kids = kidsQ.data ?? [];
+  const tasks = tasksQ.data ?? [];
+  const purchases = purchasesQ.data ?? [];
+
   const [tab, setTab] = useState<"tasks" | "approvals">("tasks");
   const [editing, setEditing] = useState<Task | null>(null);
   const [creating, setCreating] = useState(false);
+  const [filter, setFilter] = useState<string>("all");
+
+  const defaultAssignee = kids[0]?.id ?? "";
+  const blank: FormState = {
+    title: "",
+    category: "Hygiene",
+    assignee_id: defaultAssignee,
+    coins: 5,
+    frequency: "daily",
+  };
   const [form, setForm] = useState<FormState>(blank);
-  const [filter, setFilter] = useState<KidId | "all">("all");
 
   const openCreate = () => {
-    setForm(blank);
+    setForm({ ...blank, assignee_id: defaultAssignee });
     setEditing(null);
     setCreating(true);
   };
@@ -58,7 +84,7 @@ function ParentPage() {
     setForm({
       title: t.title,
       category: t.category,
-      assignee: t.assignee,
+      assignee_id: t.assignee_id,
       coins: t.coins,
       frequency: t.frequency,
     });
@@ -69,21 +95,37 @@ function ParentPage() {
     setCreating(false);
     setEditing(null);
   };
+
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.title.trim()) return toast.error("Title required");
+    if (!form.assignee_id) return toast.error("Pick an assignee");
     if (editing) {
-      updateTask(editing.id, form);
-      toast.success("Quest updated");
+      updateTask.mutate(
+        { id: editing.id, patch: form },
+        {
+          onSuccess: () => {
+            toast.success("Quest updated");
+            close();
+          },
+          onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
+        },
+      );
     } else {
-      addTask(form);
-      toast.success("Quest created");
+      addTask.mutate(form, {
+        onSuccess: () => {
+          toast.success("Quest created");
+          close();
+        },
+        onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
+      });
     }
-    close();
   };
 
-  const tasks = state.tasks.filter((t) => filter === "all" || t.assignee === filter);
-  const pendingPurchases = state.purchases.filter((p) => !p.delivered);
+  const filtered = tasks.filter((t) => filter === "all" || t.assignee_id === filter);
+  const pending = purchases.filter((p) => !p.delivered);
+  const loading = profileQ.isLoading || kidsQ.isLoading || tasksQ.isLoading;
+  const kidById = Object.fromEntries(kids.map((k) => [k.id, k] as const));
 
   return (
     <div>
@@ -95,17 +137,24 @@ function ParentPage() {
           </div>
           <h1 className="mt-1 text-2xl font-extrabold">Parent Dashboard</h1>
           <div className="mt-3 grid grid-cols-2 gap-3">
-            {(["rosa", "brother"] as KidId[]).map((id) => (
-              <div key={id} className="rounded-2xl bg-white/15 p-3 backdrop-blur">
-                <div className="flex items-center gap-2 text-sm font-extrabold">
-                  <span className="text-lg">{KIDS[id].emoji}</span>
-                  {KIDS[id].name}
+            {loading ? (
+              <>
+                <div className="h-16 rounded-2xl bg-white/15 animate-pulse" />
+                <div className="h-16 rounded-2xl bg-white/15 animate-pulse" />
+              </>
+            ) : (
+              kids.map((k) => (
+                <div key={k.id} className="rounded-2xl bg-white/15 p-3 backdrop-blur">
+                  <div className="flex items-center gap-2 text-sm font-extrabold">
+                    <span className="text-lg">{k.emoji ?? "🙂"}</span>
+                    {k.name}
+                  </div>
+                  <div className="mt-1 text-xs opacity-90">
+                    🔥 {k.streak_count} · 🪙 {coinsFor(k.id, completionsQ.data ?? [], purchases)}
+                  </div>
                 </div>
-                <div className="mt-1 text-xs opacity-90">
-                  🔥 {state.streaks[id].count} · 🪙 {coinsFor(id)}
-                </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
 
@@ -118,7 +167,9 @@ function ParentPage() {
                 tab === t ? "bg-card shadow-sm" : "text-muted-foreground"
               }`}
             >
-              {t === "tasks" ? "Tasks" : `Approvals${pendingPurchases.length ? ` (${pendingPurchases.length})` : ""}`}
+              {t === "tasks"
+                ? "Tasks"
+                : `Approvals${pending.length ? ` (${pending.length})` : ""}`}
             </button>
           ))}
         </div>
@@ -127,15 +178,27 @@ function ParentPage() {
           <div className="mt-4">
             <div className="mb-3 flex items-center justify-between gap-2">
               <div className="flex gap-1 rounded-full border border-border bg-card p-1">
-                {(["all", "rosa", "brother"] as const).map((k) => (
+                <button
+                  onClick={() => setFilter("all")}
+                  className={`rounded-full px-3 py-1 text-xs font-extrabold ${
+                    filter === "all"
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground"
+                  }`}
+                >
+                  All
+                </button>
+                {kids.map((k) => (
                   <button
-                    key={k}
-                    onClick={() => setFilter(k)}
+                    key={k.id}
+                    onClick={() => setFilter(k.id)}
                     className={`rounded-full px-3 py-1 text-xs font-extrabold ${
-                      filter === k ? "bg-primary text-primary-foreground" : "text-muted-foreground"
+                      filter === k.id
+                        ? "bg-primary text-primary-foreground"
+                        : "text-muted-foreground"
                     }`}
                   >
-                    {k === "all" ? "All" : KIDS[k].name}
+                    {k.name}
                   </button>
                 ))}
               </div>
@@ -148,8 +211,12 @@ function ParentPage() {
             </div>
 
             <div className="space-y-2">
-              {tasks.map((t) => {
+              {tasksQ.isLoading && (
+                <p className="text-center text-sm text-muted-foreground">Loading tasks…</p>
+              )}
+              {filtered.map((t) => {
                 const token = categoryToken(t.category);
+                const assignee = kidById[t.assignee_id];
                 return (
                   <div
                     key={t.id}
@@ -171,11 +238,9 @@ function ParentPage() {
                           {t.category}
                         </span>
                         <span className="rounded-full bg-muted px-1.5 py-0.5">
-                          {KIDS[t.assignee].emoji} {KIDS[t.assignee].name}
+                          {assignee?.emoji ?? "🙂"} {assignee?.name ?? "?"}
                         </span>
-                        <span className="rounded-full bg-muted px-1.5 py-0.5">
-                          {t.frequency}
-                        </span>
+                        <span className="rounded-full bg-muted px-1.5 py-0.5">{t.frequency}</span>
                         <span className="text-coin">🪙 {t.coins}</span>
                       </div>
                     </div>
@@ -189,8 +254,9 @@ function ParentPage() {
                     <button
                       onClick={() => {
                         if (confirm(`Delete "${t.title}"?`)) {
-                          deleteTask(t.id);
-                          toast.success("Quest deleted");
+                          deleteTask.mutate(t.id, {
+                            onSuccess: () => toast.success("Quest deleted"),
+                          });
                         }
                       }}
                       className="rounded-lg p-2 text-destructive hover:bg-destructive/10"
@@ -201,7 +267,7 @@ function ParentPage() {
                   </div>
                 );
               })}
-              {tasks.length === 0 && (
+              {!tasksQ.isLoading && filtered.length === 0 && (
                 <p className="rounded-2xl border-2 border-dashed border-border p-6 text-center text-sm text-muted-foreground">
                   No quests. Tap "New" to create one.
                 </p>
@@ -211,55 +277,72 @@ function ParentPage() {
         ) : (
           <div className="mt-4 space-y-2">
             <h2 className="mb-1 text-xs font-extrabold uppercase tracking-widest text-muted-foreground">
-              Pending ({pendingPurchases.length})
+              Pending ({pending.length})
             </h2>
-            {pendingPurchases.length === 0 && (
+            {purchasesQ.isLoading && (
+              <p className="text-sm text-muted-foreground">Loading…</p>
+            )}
+            {!purchasesQ.isLoading && pending.length === 0 && (
               <p className="rounded-2xl border-2 border-dashed border-border p-6 text-center text-sm text-muted-foreground">
                 No pending rewards. 🎉
               </p>
             )}
-            {pendingPurchases.map((p) => (
-              <div
-                key={p.id}
-                className="flex items-center justify-between gap-3 rounded-2xl border border-border bg-card p-3"
-              >
-                <div className="min-w-0">
-                  <div className="truncate font-bold">{p.rewardName}</div>
-                  <div className="text-xs text-muted-foreground">
-                    {KIDS[p.kidId].emoji} {KIDS[p.kidId].name} · 🪙 {p.cost} · {p.date}
-                  </div>
-                </div>
-                <button
-                  onClick={() => {
-                    markDelivered(p.id);
-                    toast.success("Marked delivered");
-                  }}
-                  className="rounded-full bg-primary px-3 py-2 text-xs font-extrabold text-primary-foreground btn-chunky active:btn-chunky-press"
+            {pending.map((p) => {
+              const k = kidById[p.kid_id];
+              return (
+                <div
+                  key={p.id}
+                  className="flex items-center justify-between gap-3 rounded-2xl border border-border bg-card p-3"
                 >
-                  Deliver
-                </button>
-              </div>
-            ))}
+                  <div className="min-w-0">
+                    <div className="truncate font-bold">
+                      {p.reward?.emoji ?? "🎁"} {p.reward?.name ?? "Reward"}
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      {k?.emoji ?? "🙂"} {k?.name ?? "?"} · 🪙 {p.cost} ·{" "}
+                      {p.created_at.slice(0, 10)}
+                    </div>
+                  </div>
+                  <button
+                    onClick={() =>
+                      markDelivered.mutate(p.id, {
+                        onSuccess: () => toast.success("Marked delivered"),
+                      })
+                    }
+                    className="rounded-full bg-primary px-3 py-2 text-xs font-extrabold text-primary-foreground btn-chunky active:btn-chunky-press"
+                  >
+                    Deliver
+                  </button>
+                </div>
+              );
+            })}
 
             <h2 className="mt-6 mb-1 text-xs font-extrabold uppercase tracking-widest text-muted-foreground">
               Delivered
             </h2>
-            {state.purchases.filter((p) => p.delivered).slice().reverse().map((p) => (
-              <div
-                key={p.id}
-                className="flex items-center justify-between gap-3 rounded-2xl border border-border bg-muted/30 p-3 opacity-80"
-              >
-                <div className="min-w-0">
-                  <div className="truncate font-bold">{p.rewardName}</div>
-                  <div className="text-xs text-muted-foreground">
-                    {KIDS[p.kidId].emoji} {KIDS[p.kidId].name} · {p.date}
+            {purchases
+              .filter((p) => p.delivered)
+              .map((p) => {
+                const k = kidById[p.kid_id];
+                return (
+                  <div
+                    key={p.id}
+                    className="flex items-center justify-between gap-3 rounded-2xl border border-border bg-muted/30 p-3 opacity-80"
+                  >
+                    <div className="min-w-0">
+                      <div className="truncate font-bold">
+                        {p.reward?.emoji ?? "🎁"} {p.reward?.name ?? "Reward"}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        {k?.emoji ?? "🙂"} {k?.name ?? "?"} · {p.created_at.slice(0, 10)}
+                      </div>
+                    </div>
+                    <span className="rounded-full bg-success/20 px-2 py-0.5 text-xs font-extrabold text-success">
+                      ✓
+                    </span>
                   </div>
-                </div>
-                <span className="rounded-full bg-success/20 px-2 py-0.5 text-xs font-extrabold text-success">
-                  ✓
-                </span>
-              </div>
-            ))}
+                );
+              })}
           </div>
         )}
 
@@ -327,18 +410,18 @@ function ParentPage() {
               <label className="block">
                 <span className="text-xs font-bold text-muted-foreground">Assignee</span>
                 <div className="mt-1 flex gap-1.5">
-                  {(["rosa", "brother"] as KidId[]).map((k) => (
+                  {kids.map((k) => (
                     <button
                       type="button"
-                      key={k}
-                      onClick={() => setForm({ ...form, assignee: k })}
+                      key={k.id}
+                      onClick={() => setForm({ ...form, assignee_id: k.id })}
                       className={`flex-1 rounded-xl py-2 text-xs font-extrabold ${
-                        form.assignee === k
+                        form.assignee_id === k.id
                           ? "bg-primary text-primary-foreground"
                           : "bg-muted text-muted-foreground"
                       }`}
                     >
-                      {KIDS[k].emoji} {KIDS[k].name}
+                      {k.emoji ?? "🙂"} {k.name}
                     </button>
                   ))}
                 </div>
@@ -384,9 +467,12 @@ function ParentPage() {
                   type="button"
                   onClick={() => {
                     if (confirm("Delete this quest?")) {
-                      deleteTask(editing.id);
-                      toast.success("Quest deleted");
-                      close();
+                      deleteTask.mutate(editing.id, {
+                        onSuccess: () => {
+                          toast.success("Quest deleted");
+                          close();
+                        },
+                      });
                     }
                   }}
                   className="rounded-full bg-destructive/10 px-4 py-2.5 text-sm font-extrabold text-destructive"
@@ -396,9 +482,14 @@ function ParentPage() {
               )}
               <button
                 type="submit"
-                className="flex-1 rounded-full bg-primary py-3 font-extrabold text-primary-foreground btn-chunky active:btn-chunky-press"
+                disabled={addTask.isPending || updateTask.isPending}
+                className="flex-1 rounded-full bg-primary py-3 font-extrabold text-primary-foreground btn-chunky active:btn-chunky-press disabled:opacity-50"
               >
-                {editing ? "Save changes" : "Create quest"}
+                {addTask.isPending || updateTask.isPending
+                  ? "Saving…"
+                  : editing
+                    ? "Save changes"
+                    : "Create quest"}
               </button>
             </div>
           </form>

@@ -1,34 +1,53 @@
 import { useState } from "react";
 import confetti from "canvas-confetti";
 import { Check } from "lucide-react";
-import { categoryToken, CATEGORY_EMOJI, type Task, type KidId } from "@/lib/app-store";
-import { useApp } from "@/lib/app-store";
+import {
+  categoryToken,
+  CATEGORY_EMOJI,
+  type Task,
+  useToggleTask,
+} from "@/lib/app-store";
 
-export function TaskItem({ task, kidId }: { task: Task; kidId: KidId }) {
-  const { toggleTask, isDone } = useApp();
-  const done = isDone(task.id, kidId);
+export function TaskItem({
+  task,
+  kidId,
+  done,
+}: {
+  task: Task;
+  kidId: string;
+  done: boolean;
+}) {
+  const toggle = useToggleTask();
   const [floating, setFloating] = useState<number | null>(null);
   const token = categoryToken(task.category);
 
   const handle = () => {
-    const res = toggleTask(task.id, kidId);
-    if (res.added) {
-      setFloating(res.coins);
-      setTimeout(() => setFloating(null), 900);
-      confetti({
-        particleCount: 80,
-        spread: 70,
-        origin: { y: 0.7 },
-        colors: ["#58cc02", "#ffc800", "#ff4b4b", "#1cb0f6", "#ce82ff"],
-        disableForReducedMotion: true,
-      });
-    }
+    if (toggle.isPending) return;
+    toggle.mutate(
+      { task, kidId, isDone: done },
+      {
+        onSuccess: (res) => {
+          if (res.added) {
+            setFloating(res.coins);
+            setTimeout(() => setFloating(null), 900);
+            confetti({
+              particleCount: 80,
+              spread: 70,
+              origin: { y: 0.7 },
+              colors: ["#58cc02", "#ffc800", "#ff4b4b", "#1cb0f6", "#ce82ff"],
+              disableForReducedMotion: true,
+            });
+          }
+        },
+      },
+    );
   };
 
   return (
     <button
       onClick={handle}
-      className={`group relative flex w-full items-center gap-3 rounded-2xl border-2 bg-card px-4 py-3 text-left transition-all active:scale-[0.98] ${
+      disabled={toggle.isPending}
+      className={`group relative flex w-full items-center gap-3 rounded-2xl border-2 bg-card px-4 py-3 text-left transition-all active:scale-[0.98] disabled:opacity-70 ${
         done ? "border-success/40 bg-success/5" : "border-border hover:border-foreground/20"
       }`}
     >
@@ -51,9 +70,7 @@ export function TaskItem({ task, kidId }: { task: Task; kidId: KidId }) {
           >
             {task.category}
           </span>
-          <span className="flex items-center gap-1 font-bold text-coin">
-            🪙 +{task.coins}
-          </span>
+          <span className="flex items-center gap-1 font-bold text-coin">🪙 +{task.coins}</span>
         </div>
       </div>
       <div
