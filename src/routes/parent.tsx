@@ -203,23 +203,34 @@ function ParentPage() {
           </div>
         </div>
 
-        <div className="mt-4 flex gap-2 rounded-full bg-muted p-1">
-          {(["tasks", "approvals"] as const).map((t) => (
+        <div className="mt-4 grid grid-cols-4 gap-1 rounded-full bg-muted p-1">
+          {(
+            [
+              { id: "tasks", label: "Tasks", badge: 0 },
+              { id: "family", label: "Family", badge: 0 },
+              { id: "review", label: "Review", badge: newReviewCount },
+              { id: "approvals", label: "Rewards", badge: pending.length },
+            ] as { id: ParentTab; label: string; badge: number }[]
+          ).map((t) => (
             <button
-              key={t}
-              onClick={() => setTab(t)}
-              className={`flex-1 rounded-full py-2 text-sm font-extrabold ${
-                tab === t ? "bg-card shadow-sm" : "text-muted-foreground"
+              key={t.id}
+              onClick={() => setTab(t.id)}
+              className={`relative rounded-full py-2 text-xs font-extrabold ${
+                tab === t.id ? "bg-card shadow-sm" : "text-muted-foreground"
               }`}
             >
-              {t === "tasks"
-                ? "Tasks"
-                : `Approvals${pending.length ? ` (${pending.length})` : ""}`}
+              {t.label}
+              {t.badge > 0 && (
+                <span className="absolute -right-0.5 -top-0.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-extrabold text-destructive-foreground shadow">
+                  {t.badge > 99 ? "99+" : t.badge}
+                </span>
+              )}
             </button>
           ))}
         </div>
 
         {tab === "tasks" ? (
+
           <div className="mt-4">
             <div className="mb-3 flex items-center justify-between gap-2">
               <div className="flex gap-1 rounded-full border border-border bg-card p-1">
