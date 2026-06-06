@@ -1,24 +1,34 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import { Pencil, Plus, Trash2, X } from "lucide-react";
+import { Pencil, Plus, Trash2, X, UserPlus, RefreshCw, KeyRound } from "lucide-react";
 import {
   CATEGORIES,
   CATEGORY_EMOJI,
+  SCHEDULE_LABEL,
+  WEEKDAYS,
   categoryToken,
   coinsFor,
+  generateRandomPin,
   useAddTask,
   useAllCompletions,
+  useCreateKid,
+  useDeleteKid,
   useDeleteTask,
+  useDisputeCompletion,
+  useFamilyCompletionsRealtime,
   useKids,
   useMarkDelivered,
   useParentProfile,
   usePurchases,
+  useRegeneratePin,
+  useReviewFeed,
   useSession,
   useTasks,
   useUpdateTask,
   type Category,
   type Frequency,
+  type ScheduleType,
   type Task,
 } from "@/lib/app-store";
 import { TopBar } from "@/components/RoleSwitcher";
@@ -33,12 +43,16 @@ export const Route = createFileRoute("/parent")({
   component: ParentPage,
 });
 
+type ParentTab = "tasks" | "family" | "review" | "approvals";
+
 type FormState = {
   title: string;
   category: Category;
   assignee_id: string;
   coins: number;
   frequency: Frequency;
+  days_of_week: number[];
+  schedule_type: ScheduleType;
 };
 
 function ParentPage() {
@@ -47,23 +61,48 @@ function ParentPage() {
   const parentId = profileQ.data?.id;
   const kidsQ = useKids(parentId);
   const tasksQ = useTasks(parentId);
-  const kidIds = (kidsQ.data ?? []).map((k) => k.id);
+  const kids = kidsQ.data ?? [];
+  const kidIds = useMemo(() => kids.map((k) => k.id), [kids]);
   const completionsQ = useAllCompletions(kidIds);
   const purchasesQ = usePurchases(kidIds);
+  const reviewQ = useReviewFeed(kidIds);
+
+  useFamilyCompletionsRealtime(kidIds);
 
   const addTask = useAddTask(parentId);
   const updateTask = useUpdateTask();
   const deleteTask = useDeleteTask();
   const markDelivered = useMarkDelivered();
+  const createKid = useCreateKid();
+  const deleteKid = useDeleteKid();
+  const regenPin = useRegeneratePin();
+  const disputeCompletion = useDisputeCompletion();
 
-  const kids = kidsQ.data ?? [];
   const tasks = tasksQ.data ?? [];
   const purchases = purchasesQ.data ?? [];
 
-  const [tab, setTab] = useState<"tasks" | "approvals">("tasks");
+  const [tab, setTab] = useState<ParentTab>("tasks");
   const [editing, setEditing] = useState<Task | null>(null);
   const [creating, setCreating] = useState(false);
   const [filter, setFilter] = useState<string>("all");
+
+  // Track last-seen review count to badge new completions
+  const [seenReviewCount, setSeenReviewCount] = useState(0);
+  const initRef = useRef(false);
+  useEffect(() => {
+    if (!initRef.current && reviewQ.data) {
+      setSeenReviewCount(reviewQ.data.length);
+      initRef.current = true;
+    }
+  }, [reviewQ.data]);
+  useEffect(() => {
+    if (tab === "review" && reviewQ.data) setSeenReviewCount(reviewQ.data.length);
+  }, [tab, reviewQ.data]);
+  const newReviewCount = Math.max(0, (reviewQ.data?.length ?? 0) - seenReviewCount);
+
+  // Family form state
+  const [showAddKid, setShowAddKid] = useState(false);
+  const [newKid, setNewKid] = useState({ name: "", emoji: "🙂", pin: generateRandomPin() });
 
   const defaultAssignee = kids[0]?.id ?? "";
   const blank: FormState = {
@@ -72,6 +111,8 @@ function ParentPage() {
     assignee_id: defaultAssignee,
     coins: 5,
     frequency: "daily",
+    days_of_week: [1, 2, 3, 4, 5, 6, 7],
+    schedule_type: "always",
   };
   const [form, setForm] = useState<FormState>(blank);
 
@@ -87,6 +128,8 @@ function ParentPage() {
       assignee_id: t.assignee_id,
       coins: t.coins,
       frequency: t.frequency,
+      days_of_week: t.days_of_week ?? [1, 2, 3, 4, 5, 6, 7],
+      schedule_type: t.schedule_type ?? "always",
     });
     setEditing(t);
     setCreating(true);
@@ -100,6 +143,7 @@ function ParentPage() {
     e.preventDefault();
     if (!form.title.trim()) return toast.error("Title required");
     if (!form.assignee_id) return toast.error("Pick an assignee");
+    if (form.days_of_week.length === 0) return toast.error("Pick at least one day");
     if (editing) {
       updateTask.mutate(
         { id: editing.id, patch: form },
@@ -126,6 +170,7 @@ function ParentPage() {
   const pending = purchases.filter((p) => !p.delivered);
   const loading = profileQ.isLoading || kidsQ.isLoading || tasksQ.isLoading;
   const kidById = Object.fromEntries(kids.map((k) => [k.id, k] as const));
+
 
   return (
     <div>
