@@ -3,6 +3,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
+import { lookupKidEmailByPinFn } from "@/lib/kids.functions";
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
@@ -19,12 +20,15 @@ export const Route = createFileRoute("/auth")({
   component: AuthPage,
 });
 
+type Mode = "signin" | "signup" | "kid";
+
 function AuthPage() {
   const navigate = useNavigate();
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [mode, setMode] = useState<Mode>("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+  const [pin, setPin] = useState("");
   const [busy, setBusy] = useState(false);
 
   const submit = async (e: React.FormEvent) => {
@@ -43,10 +47,23 @@ function AuthPage() {
         if (error) throw error;
         toast.success("Account created! You're signed in.");
         navigate({ to: "/" });
-      } else {
+      } else if (mode === "signin") {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         toast.success("Welcome back!");
+        navigate({ to: "/" });
+      } else {
+        // kid mode
+        if (!/^\d{6}$/.test(pin)) throw new Error("Enter your 6-digit PIN");
+        const { email: kidEmail, name: kidName } = await lookupKidEmailByPinFn({
+          data: { pin },
+        });
+        const { error } = await supabase.auth.signInWithPassword({
+          email: kidEmail,
+          password: pin,
+        });
+        if (error) throw error;
+        toast.success(`Hi ${kidName}! 🎉`);
         navigate({ to: "/" });
       }
     } catch (err) {
@@ -71,6 +88,7 @@ function AuthPage() {
       setBusy(false);
     }
   };
+
 
   return (
     <div className="flex min-h-screen items-center justify-center px-5 py-10">
