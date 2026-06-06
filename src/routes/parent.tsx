@@ -647,6 +647,243 @@ function ParentPage() {
           </form>
         </div>
       )}
+
+      {showAddKid && (
+        <div
+          className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 sm:items-center"
+          onClick={() => setShowAddKid(false)}
+        >
+          <form
+            onClick={(e) => e.stopPropagation()}
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (!newKid.name.trim()) return toast.error("Name required");
+              if (!/^\d{6}$/.test(newKid.pin)) return toast.error("PIN must be 6 digits");
+              createKid.mutate(newKid, {
+                onSuccess: () => {
+                  toast.success(`${newKid.name} added! PIN: ${newKid.pin}`);
+                  setShowAddKid(false);
+                },
+                onError: (err) => toast.error(err instanceof Error ? err.message : "Failed"),
+              });
+            }}
+            className="w-full max-w-md rounded-t-3xl bg-card p-5 shadow-2xl sm:rounded-3xl"
+          >
+            <div className="mb-3 flex items-center justify-between">
+              <h3 className="text-lg font-extrabold">Add a child</h3>
+              <button
+                type="button"
+                onClick={() => setShowAddKid(false)}
+                className="rounded-full p-1 hover:bg-muted"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <label className="block">
+              <span className="text-xs font-bold text-muted-foreground">Name</span>
+              <input
+                value={newKid.name}
+                onChange={(e) => setNewKid({ ...newKid, name: e.target.value })}
+                placeholder="e.g. Rosa"
+                className="mt-1 w-full rounded-xl border-2 border-border bg-background px-3 py-2 font-bold outline-none focus:border-primary"
+                autoFocus
+              />
+            </label>
+
+            <label className="mt-3 block">
+              <span className="text-xs font-bold text-muted-foreground">Avatar (emoji)</span>
+              <div className="mt-1 flex flex-wrap gap-1.5">
+                {["🌸", "🦊", "🐻", "🐯", "🐼", "🦄", "🐶", "🐱", "🦁", "🐵", "🐧", "🐸"].map(
+                  (e) => (
+                    <button
+                      type="button"
+                      key={e}
+                      onClick={() => setNewKid({ ...newKid, emoji: e })}
+                      className={`h-10 w-10 rounded-xl text-xl ${
+                        newKid.emoji === e ? "bg-primary/20 ring-2 ring-primary" : "bg-muted"
+                      }`}
+                    >
+                      {e}
+                    </button>
+                  ),
+                )}
+              </div>
+            </label>
+
+            <label className="mt-3 block">
+              <span className="text-xs font-bold text-muted-foreground">
+                6-digit PIN (kid uses this to sign in)
+              </span>
+              <div className="mt-1 flex gap-2">
+                <input
+                  value={newKid.pin}
+                  onChange={(e) =>
+                    setNewKid({ ...newKid, pin: e.target.value.replace(/\D/g, "").slice(0, 6) })
+                  }
+                  inputMode="numeric"
+                  className="flex-1 rounded-xl border-2 border-border bg-background px-3 py-2 text-center font-mono text-lg font-extrabold tracking-[0.4em] outline-none focus:border-primary"
+                />
+                <button
+                  type="button"
+                  onClick={() => setNewKid({ ...newKid, pin: generateRandomPin() })}
+                  className="rounded-xl bg-muted px-3"
+                  aria-label="Randomize PIN"
+                >
+                  <RefreshCw className="h-4 w-4" />
+                </button>
+              </div>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Share this PIN with your child. They tap "Login as Kid" on the sign-in screen.
+              </p>
+            </label>
+
+            <button
+              type="submit"
+              disabled={createKid.isPending}
+              className="mt-5 w-full rounded-full bg-primary py-3 font-extrabold text-primary-foreground btn-chunky active:btn-chunky-press disabled:opacity-50"
+            >
+              {createKid.isPending ? "Creating…" : "Create child account"}
+            </button>
+          </form>
+        </div>
+      )}
     </div>
   );
 }
+
+// ============================================================
+
+function FamilyPane({
+  kids,
+  onAdd,
+  onDelete,
+  onRegenPin,
+}: {
+  kids: import("@/lib/app-store").Profile[];
+  onAdd: () => void;
+  onDelete: (id: string, name: string) => void;
+  onRegenPin: (id: string, name: string) => void;
+}) {
+  return (
+    <div className="mt-4">
+      <div className="mb-3 flex items-center justify-between">
+        <h2 className="text-sm font-extrabold uppercase tracking-widest text-muted-foreground">
+          Family ({kids.length})
+        </h2>
+        <button
+          onClick={onAdd}
+          className="flex items-center gap-1 rounded-full bg-primary px-3 py-2 text-sm font-extrabold text-primary-foreground btn-chunky active:btn-chunky-press"
+        >
+          <UserPlus className="h-4 w-4" /> Add child
+        </button>
+      </div>
+
+      {kids.length === 0 && (
+        <p className="rounded-2xl border-2 border-dashed border-border p-6 text-center text-sm text-muted-foreground">
+          No children yet. Tap "Add child" to create their profile and PIN.
+        </p>
+      )}
+
+      <div className="space-y-2">
+        {kids.map((k) => (
+          <div
+            key={k.id}
+            className="flex items-center gap-3 rounded-2xl border border-border bg-card px-3 py-3"
+          >
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-muted text-2xl">
+              {k.emoji ?? "🙂"}
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="truncate font-extrabold">{k.name}</div>
+              <div className="mt-0.5 flex items-center gap-2 text-xs font-bold text-muted-foreground">
+                <KeyRound className="h-3 w-3" />
+                <span className="font-mono tracking-[0.3em] text-foreground">
+                  {k.pin_code ?? "— —"}
+                </span>
+                <span>🔥 {k.streak_count}</span>
+              </div>
+            </div>
+            <button
+              onClick={() => onRegenPin(k.id, k.name)}
+              className="rounded-lg p-2 text-muted-foreground hover:bg-muted"
+              aria-label="New PIN"
+              title="Generate new PIN"
+            >
+              <RefreshCw className="h-4 w-4" />
+            </button>
+            <button
+              onClick={() => onDelete(k.id, k.name)}
+              className="rounded-lg p-2 text-destructive hover:bg-destructive/10"
+              aria-label="Remove child"
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ReviewPane({
+  items,
+  loading,
+  kidById,
+  onDispute,
+}: {
+  items: import("@/lib/app-store").ReviewItem[];
+  loading: boolean;
+  kidById: Record<string, import("@/lib/app-store").Profile>;
+  onDispute: (id: string) => void;
+}) {
+  return (
+    <div className="mt-4 space-y-2">
+      <h2 className="mb-1 text-xs font-extrabold uppercase tracking-widest text-muted-foreground">
+        Recent completions
+      </h2>
+      {loading && <p className="text-sm text-muted-foreground">Loading…</p>}
+      {!loading && items.length === 0 && (
+        <p className="rounded-2xl border-2 border-dashed border-border p-6 text-center text-sm text-muted-foreground">
+          No completions yet. They'll appear here in real-time. ⚡
+        </p>
+      )}
+      {items.map((it) => {
+        const k = kidById[it.kid_id];
+        const cat = it.task?.category;
+        const token = cat ? categoryToken(cat) : "primary";
+        return (
+          <div
+            key={it.id}
+            className="flex items-center gap-3 rounded-2xl border border-border bg-card px-3 py-3"
+          >
+            <div
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-xl"
+              style={{
+                backgroundColor: cat
+                  ? `color-mix(in oklab, var(--${token}) 22%, white)`
+                  : undefined,
+              }}
+            >
+              {cat ? CATEGORY_EMOJI[cat] : "✅"}
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="truncate font-bold">{it.task?.title ?? "Deleted quest"}</div>
+              <div className="mt-0.5 text-xs text-muted-foreground">
+                {k?.emoji ?? "🙂"} {k?.name ?? "?"} · 🪙 {it.coins_awarded} ·{" "}
+                {new Date(it.created_at).toLocaleString()}
+              </div>
+            </div>
+            <button
+              onClick={() => onDispute(it.id)}
+              className="rounded-full bg-destructive/10 px-3 py-1.5 text-xs font-extrabold text-destructive"
+            >
+              Dispute
+            </button>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
