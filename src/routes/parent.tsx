@@ -330,7 +330,7 @@ function ParentPage() {
               )}
             </div>
           </div>
-        ) : (
+        ) : tab === "approvals" ? (
           <div className="mt-4 space-y-2">
             <h2 className="mb-1 text-xs font-extrabold uppercase tracking-widest text-muted-foreground">
               Pending ({pending.length})
