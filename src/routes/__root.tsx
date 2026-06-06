@@ -10,8 +10,8 @@ import { type ReactNode } from "react";
 import { Toaster } from "sonner";
 
 import appCss from "../styles.css?url";
-import { AppProvider } from "@/lib/app-store";
 import { RoleSwitcher } from "@/components/RoleSwitcher";
+import { AppGate } from "@/components/AppGate";
 
 function NotFoundComponent() {
   return (

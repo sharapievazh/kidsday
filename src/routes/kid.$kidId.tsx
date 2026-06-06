@@ -3,63 +3,85 @@ import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import confetti from "canvas-confetti";
 import {
-  useApp,
-  KIDS,
   CATEGORIES,
-  REWARDS,
-  type KidId,
   categoryToken,
   CATEGORY_EMOJI,
+  coinsFor,
+  useAllCompletions,
+  useBuyReward,
+  useKid,
+  useParentProfile,
+  usePurchases,
+  useRewards,
+  useSession,
+  useTasks,
+  useTodayCompletions,
 } from "@/lib/app-store";
 import { ProgressRing } from "@/components/ProgressRing";
 import { TaskItem } from "@/components/TaskItem";
 import { TopBar } from "@/components/RoleSwitcher";
 
 export const Route = createFileRoute("/kid/$kidId")({
-  head: ({ params }) => ({
+  head: () => ({
     meta: [
-      { title: `${params.kidId === "rosa" ? "Rosa" : "Ansar"} — Kids Day` },
+      { title: "Kid — Kids Day" },
       { name: "description", content: "Your daily quests, coins and rewards." },
     ],
   }),
-  beforeLoad: ({ params }) => {
-    if (params.kidId !== "rosa" && params.kidId !== "brother") throw notFound();
-  },
   component: KidPage,
 });
 
 function KidPage() {
   const { kidId } = Route.useParams();
-  const id = kidId as KidId;
-  const kid = KIDS[id];
-  const { tasksFor, isDone, coinsFor, state, buyReward } = useApp();
+  const { session } = useSession();
+  const profileQ = useParentProfile(!!session);
+  const parentId = profileQ.data?.id;
+
+  const kidQ = useKid(kidId);
+  const tasksQ = useTasks(parentId);
+  const completionsQ = useTodayCompletions(kidId);
+  const allCompletionsQ = useAllCompletions([kidId]);
+  const rewardsQ = useRewards(parentId);
+  const purchasesQ = usePurchases([kidId]);
+  const buy = useBuyReward();
+
   const [tab, setTab] = useState<"tasks" | "rewards">("tasks");
   const navigate = useNavigate();
 
-  const tasks = tasksFor(id);
-  const done = tasks.filter((t) => isDone(t.id, id)).length;
-  const coins = coinsFor(id);
-  const streak = state.streaks[id].count;
+  if (kidQ.isLoading || tasksQ.isLoading) {
+    return <LoadingScreen />;
+  }
+  if (kidQ.error || !kidQ.data) throw notFound();
+  const kid = kidQ.data;
 
-  const grouped = useMemo(() => {
-    return CATEGORIES.map((c) => ({
-      cat: c,
-      items: tasks.filter((t) => t.category === c),
-    })).filter((g) => g.items.length > 0);
-  }, [tasks]);
+  const allTasks = (tasksQ.data ?? []).filter((t) => t.assignee_id === kidId);
+  const todayDone = new Set((completionsQ.data ?? []).map((c) => c.task_id));
+  const done = allTasks.filter((t) => todayDone.has(t.id)).length;
+  const coins = coinsFor(kidId, allCompletionsQ.data ?? [], purchasesQ.data ?? []);
+  const streak = kid.streak_count ?? 0;
+
+  const grouped = CATEGORIES.map((c) => ({
+    cat: c,
+    items: allTasks.filter((t) => t.category === c),
+  })).filter((g) => g.items.length > 0);
 
   const handleBuy = (rewardId: string) => {
-    const r = REWARDS.find((x) => x.id === rewardId);
+    const r = (rewardsQ.data ?? []).find((x) => x.id === rewardId);
     if (!r) return;
     if (coins < r.cost) {
       toast.error(`Need ${r.cost - coins} more coins!`);
       return;
     }
-    const ok = buyReward(id, r);
-    if (ok) {
-      confetti({ particleCount: 120, spread: 90, origin: { y: 0.6 } });
-      toast.success(`Reward unlocked: ${r.emoji} ${r.name}`);
-    }
+    buy.mutate(
+      { reward: r, kidId },
+      {
+        onSuccess: () => {
+          confetti({ particleCount: 120, spread: 90, origin: { y: 0.6 } });
+          toast.success(`Reward unlocked: ${r.emoji ?? "🎁"} ${r.name}`);
+        },
+        onError: (e) => toast.error(e instanceof Error ? e.message : "Could not buy"),
+      },
+    );
   };
 
   return (
@@ -76,33 +98,28 @@ function KidPage() {
         }
       />
 
-      {/* Stats bar */}
       <div className="flex items-center justify-between gap-2 px-4 pt-4">
         <Stat icon="🔥" value={streak} label="streak" color="var(--streak)" />
-        <div className="text-3xl">{kid.emoji}</div>
+        <div className="text-3xl">{kid.emoji ?? "🙂"}</div>
         <Stat icon="🪙" value={coins} label="coins" color="var(--coin)" />
       </div>
 
-      {/* Progress hero */}
       <div className="flex flex-col items-center px-4 pt-4">
-        <ProgressRing value={done} total={tasks.length} label={`${done}/${tasks.length} done`} />
+        <ProgressRing value={done} total={allTasks.length} label={`${done}/${allTasks.length} done`} />
         <p className="mt-3 text-center text-sm font-bold text-muted-foreground">
-          {done === tasks.length && tasks.length > 0
+          {done === allTasks.length && allTasks.length > 0
             ? "🎉 All quests complete! Amazing!"
-            : `Keep going, ${kid.name}! ${tasks.length - done} quests left today.`}
+            : `Keep going, ${kid.name}! ${allTasks.length - done} quests left today.`}
         </p>
       </div>
 
-      {/* Tabs */}
       <div className="sticky top-[57px] z-20 mt-5 flex gap-2 border-b border-border bg-background/95 px-4 py-2 backdrop-blur">
         {(["tasks", "rewards"] as const).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
             className={`flex-1 rounded-full py-2 text-sm font-extrabold transition-all ${
-              tab === t
-                ? "bg-primary text-primary-foreground"
-                : "bg-muted text-muted-foreground"
+              tab === t ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
             }`}
           >
             {t === "tasks" ? "🎯 Quests" : "🎁 Rewards"}
@@ -127,18 +144,14 @@ function KidPage() {
                 </div>
                 <div className="space-y-2">
                   {items.map((t) => (
-                    <TaskItem key={t.id} task={t} kidId={id} />
+                    <TaskItem key={t.id} task={t} kidId={kidId} done={todayDone.has(t.id)} />
                   ))}
                 </div>
               </section>
             );
           })}
           {grouped.length === 0 && (
-            <EmptyState
-              emoji="✨"
-              title="No quests yet"
-              hint="Ask a parent to add quests for you."
-            />
+            <EmptyState emoji="✨" title="No quests yet" hint="Ask a parent to add quests for you." />
           )}
         </div>
       ) : (
@@ -149,63 +162,60 @@ function KidPage() {
               🪙 {coins}
             </span>
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            {REWARDS.map((r) => {
-              const can = coins >= r.cost;
-              return (
-                <button
-                  key={r.id}
-                  onClick={() => handleBuy(r.id)}
-                  className={`flex flex-col items-center rounded-2xl border-2 p-3 text-center transition-all active:scale-95 ${
-                    can
-                      ? "border-primary/40 bg-card hover:-translate-y-0.5"
-                      : "border-border bg-muted/50 opacity-70"
-                  }`}
-                >
-                  <div className="text-4xl">{r.emoji}</div>
-                  <div className="mt-2 text-sm font-extrabold leading-tight">
-                    {r.name}
-                  </div>
-                  <div
-                    className={`mt-2 rounded-full px-3 py-1 text-xs font-extrabold ${
-                      can ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+          {rewardsQ.isLoading ? (
+            <p className="text-sm text-muted-foreground">Loading rewards…</p>
+          ) : (
+            <div className="grid grid-cols-2 gap-3">
+              {(rewardsQ.data ?? []).map((r) => {
+                const can = coins >= r.cost;
+                return (
+                  <button
+                    key={r.id}
+                    onClick={() => handleBuy(r.id)}
+                    disabled={buy.isPending}
+                    className={`flex flex-col items-center rounded-2xl border-2 p-3 text-center transition-all active:scale-95 ${
+                      can ? "border-primary/40 bg-card hover:-translate-y-0.5" : "border-border bg-muted/50 opacity-70"
                     }`}
                   >
-                    🪙 {r.cost}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
+                    <div className="text-4xl">{r.emoji ?? "🎁"}</div>
+                    <div className="mt-2 text-sm font-extrabold leading-tight">{r.name}</div>
+                    <div
+                      className={`mt-2 rounded-full px-3 py-1 text-xs font-extrabold ${
+                        can ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                      }`}
+                    >
+                      🪙 {r.cost}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          )}
 
           <h3 className="mt-6 mb-2 text-sm font-extrabold uppercase tracking-widest text-muted-foreground">
             My purchases
           </h3>
           <div className="space-y-2">
-            {state.purchases.filter((p) => p.kidId === id).length === 0 && (
+            {(purchasesQ.data ?? []).length === 0 && (
               <p className="text-sm text-muted-foreground">Nothing yet — start saving!</p>
             )}
-            {state.purchases
-              .filter((p) => p.kidId === id)
-              .slice()
-              .reverse()
-              .map((p) => (
-                <div
-                  key={p.id}
-                  className="flex items-center justify-between rounded-xl border border-border bg-card px-3 py-2"
-                >
-                  <div className="text-sm font-bold">{p.rewardName}</div>
-                  <span
-                    className={`rounded-full px-2 py-0.5 text-xs font-extrabold ${
-                      p.delivered
-                        ? "bg-success/20 text-success"
-                        : "bg-streak/20 text-streak"
-                    }`}
-                  >
-                    {p.delivered ? "Delivered" : "Pending"}
-                  </span>
+            {(purchasesQ.data ?? []).map((p) => (
+              <div
+                key={p.id}
+                className="flex items-center justify-between rounded-xl border border-border bg-card px-3 py-2"
+              >
+                <div className="text-sm font-bold">
+                  {p.reward?.emoji ?? "🎁"} {p.reward?.name ?? "Reward"}
                 </div>
-              ))}
+                <span
+                  className={`rounded-full px-2 py-0.5 text-xs font-extrabold ${
+                    p.delivered ? "bg-success/20 text-success" : "bg-streak/20 text-streak"
+                  }`}
+                >
+                  {p.delivered ? "Delivered" : "Pending"}
+                </span>
+              </div>
+            ))}
           </div>
         </div>
       )}
@@ -251,6 +261,15 @@ function EmptyState({ emoji, title, hint }: { emoji: string; title: string; hint
       <div className="text-4xl">{emoji}</div>
       <p className="mt-2 font-extrabold">{title}</p>
       <p className="text-xs text-muted-foreground">{hint}</p>
+    </div>
+  );
+}
+
+function LoadingScreen() {
+  return (
+    <div className="flex min-h-[60vh] flex-col items-center justify-center gap-3 text-center">
+      <img src="/favicon.png" alt="" className="h-12 w-12 animate-pulse rounded-2xl" />
+      <p className="text-sm font-bold text-muted-foreground">Loading quests…</p>
     </div>
   );
 }
