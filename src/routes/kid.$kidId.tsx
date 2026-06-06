@@ -7,6 +7,7 @@ import {
   categoryToken,
   CATEGORY_EMOJI,
   coinsFor,
+  isTaskActiveToday,
   useAllCompletions,
   useBuyReward,
   useKid,
