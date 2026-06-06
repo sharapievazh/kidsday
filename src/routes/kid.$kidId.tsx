@@ -7,6 +7,7 @@ import {
   categoryToken,
   CATEGORY_EMOJI,
   coinsFor,
+  isTaskActiveToday,
   useAllCompletions,
   useBuyReward,
   useKid,
@@ -54,7 +55,9 @@ function KidPage() {
   if (kidQ.error || !kidQ.data) throw notFound();
   const kid = kidQ.data;
 
-  const allTasks = (tasksQ.data ?? []).filter((t) => t.assignee_id === kidId);
+  const allTasks = (tasksQ.data ?? [])
+    .filter((t) => t.assignee_id === kidId)
+    .filter((t) => isTaskActiveToday(t));
   const todayDone = new Set((completionsQ.data ?? []).map((c) => c.task_id));
   const done = allTasks.filter((t) => todayDone.has(t.id)).length;
   const coins = coinsFor(kidId, allCompletionsQ.data ?? [], purchasesQ.data ?? []);

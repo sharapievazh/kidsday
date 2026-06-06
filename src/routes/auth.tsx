@@ -3,6 +3,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
+import { lookupKidEmailByPinFn } from "@/lib/kids.functions";
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
@@ -19,12 +20,15 @@ export const Route = createFileRoute("/auth")({
   component: AuthPage,
 });
 
+type Mode = "signin" | "signup" | "kid";
+
 function AuthPage() {
   const navigate = useNavigate();
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [mode, setMode] = useState<Mode>("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+  const [pin, setPin] = useState("");
   const [busy, setBusy] = useState(false);
 
   const submit = async (e: React.FormEvent) => {
@@ -43,10 +47,23 @@ function AuthPage() {
         if (error) throw error;
         toast.success("Account created! You're signed in.");
         navigate({ to: "/" });
-      } else {
+      } else if (mode === "signin") {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         toast.success("Welcome back!");
+        navigate({ to: "/" });
+      } else {
+        // kid mode
+        if (!/^\d{6}$/.test(pin)) throw new Error("Enter your 6-digit PIN");
+        const { email: kidEmail, name: kidName } = await lookupKidEmailByPinFn({
+          data: { pin },
+        });
+        const { error } = await supabase.auth.signInWithPassword({
+          email: kidEmail,
+          password: pin,
+        });
+        if (error) throw error;
+        toast.success(`Hi ${kidName}! 🎉`);
         navigate({ to: "/" });
       }
     } catch (err) {
@@ -72,34 +89,68 @@ function AuthPage() {
     }
   };
 
+
   return (
     <div className="flex min-h-screen items-center justify-center px-5 py-10">
       <div className="w-full max-w-sm">
         <div className="text-center">
           <img src="/favicon.png" alt="" className="mx-auto h-16 w-16 rounded-2xl shadow-lg" />
           <h1 className="mt-3 text-2xl font-extrabold">
-            {mode === "signin" ? "Welcome back" : "Create your family"}
+            {mode === "kid"
+              ? "Login as Kid"
+              : mode === "signin"
+                ? "Welcome back"
+                : "Create your family"}
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            {mode === "signin"
-              ? "Sign in to manage Kids Day."
-              : "Parent account — kids get their own profiles inside."}
+            {mode === "kid"
+              ? "Enter your 6-digit PIN."
+              : mode === "signin"
+                ? "Sign in to manage Kids Day."
+                : "Parent account — kids get their own PIN inside."}
           </p>
         </div>
 
-        <button
-          onClick={google}
-          disabled={busy}
-          className="mt-6 flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-border bg-card py-3 font-extrabold transition hover:-translate-y-0.5 disabled:opacity-50"
-        >
-          <GoogleIcon /> Continue with Google
-        </button>
-
-        <div className="my-5 flex items-center gap-3 text-xs font-bold text-muted-foreground">
-          <span className="h-px flex-1 bg-border" /> or <span className="h-px flex-1 bg-border" />
+        {/* Mode switcher: parent vs kid */}
+        <div className="mt-5 grid grid-cols-2 gap-1 rounded-full bg-muted p-1">
+          <button
+            type="button"
+            onClick={() => setMode("signin")}
+            className={`rounded-full py-2 text-sm font-extrabold ${
+              mode !== "kid" ? "bg-card shadow-sm" : "text-muted-foreground"
+            }`}
+          >
+            👤 Parent
+          </button>
+          <button
+            type="button"
+            onClick={() => setMode("kid")}
+            className={`rounded-full py-2 text-sm font-extrabold ${
+              mode === "kid" ? "bg-card shadow-sm" : "text-muted-foreground"
+            }`}
+          >
+            🧒 Login as Kid
+          </button>
         </div>
 
-        <form onSubmit={submit} className="space-y-3">
+        {mode !== "kid" && (
+          <>
+            <button
+              onClick={google}
+              disabled={busy}
+              className="mt-5 flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-border bg-card py-3 font-extrabold transition hover:-translate-y-0.5 disabled:opacity-50"
+            >
+              <GoogleIcon /> Continue with Google
+            </button>
+
+            <div className="my-5 flex items-center gap-3 text-xs font-bold text-muted-foreground">
+              <span className="h-px flex-1 bg-border" /> or{" "}
+              <span className="h-px flex-1 bg-border" />
+            </div>
+          </>
+        )}
+
+        <form onSubmit={submit} className="mt-4 space-y-3">
           {mode === "signup" && (
             <label className="block">
               <span className="text-xs font-bold text-muted-foreground">Your name</span>
@@ -111,52 +162,80 @@ function AuthPage() {
               />
             </label>
           )}
-          <label className="block">
-            <span className="text-xs font-bold text-muted-foreground">Email</span>
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
-              className="mt-1 w-full rounded-xl border-2 border-border bg-background px-3 py-2.5 font-bold outline-none focus:border-primary"
-            />
-          </label>
-          <label className="block">
-            <span className="text-xs font-bold text-muted-foreground">Password</span>
-            <input
-              type="password"
-              required
-              minLength={6}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              className="mt-1 w-full rounded-xl border-2 border-border bg-background px-3 py-2.5 font-bold outline-none focus:border-primary"
-            />
-          </label>
+
+          {mode === "kid" ? (
+            <label className="block">
+              <span className="text-xs font-bold text-muted-foreground">PIN</span>
+              <input
+                value={pin}
+                onChange={(e) => setPin(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                inputMode="numeric"
+                autoFocus
+                required
+                placeholder="••••••"
+                className="mt-1 w-full rounded-xl border-2 border-border bg-background px-3 py-3 text-center font-mono text-2xl font-extrabold tracking-[0.6em] outline-none focus:border-primary"
+              />
+            </label>
+          ) : (
+            <>
+              <label className="block">
+                <span className="text-xs font-bold text-muted-foreground">Email</span>
+                <input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="you@example.com"
+                  className="mt-1 w-full rounded-xl border-2 border-border bg-background px-3 py-2.5 font-bold outline-none focus:border-primary"
+                />
+              </label>
+              <label className="block">
+                <span className="text-xs font-bold text-muted-foreground">Password</span>
+                <input
+                  type="password"
+                  required
+                  minLength={6}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="mt-1 w-full rounded-xl border-2 border-border bg-background px-3 py-2.5 font-bold outline-none focus:border-primary"
+                />
+              </label>
+            </>
+          )}
+
           <button
             type="submit"
             disabled={busy}
             className="mt-2 w-full rounded-full bg-primary py-3 font-extrabold text-primary-foreground btn-chunky active:btn-chunky-press disabled:opacity-50"
           >
-            {busy ? "Please wait…" : mode === "signin" ? "Sign in" : "Create account"}
+            {busy
+              ? "Please wait…"
+              : mode === "kid"
+                ? "Enter"
+                : mode === "signin"
+                  ? "Sign in"
+                  : "Create account"}
           </button>
         </form>
 
-        <p className="mt-4 text-center text-sm font-bold text-muted-foreground">
-          {mode === "signin" ? "New here?" : "Already have an account?"}{" "}
-          <button
-            type="button"
-            className="text-primary underline"
-            onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
-          >
-            {mode === "signin" ? "Create an account" : "Sign in"}
-          </button>
-        </p>
+        {mode !== "kid" && (
+          <p className="mt-4 text-center text-sm font-bold text-muted-foreground">
+            {mode === "signin" ? "New here?" : "Already have an account?"}{" "}
+            <button
+              type="button"
+              className="text-primary underline"
+              onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
+            >
+              {mode === "signin" ? "Create an account" : "Sign in"}
+            </button>
+          </p>
+        )}
       </div>
     </div>
   );
 }
+
 
 function GoogleIcon() {
   return (

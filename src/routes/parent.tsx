@@ -1,24 +1,34 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import { Pencil, Plus, Trash2, X } from "lucide-react";
+import { Pencil, Plus, Trash2, X, UserPlus, RefreshCw, KeyRound } from "lucide-react";
 import {
   CATEGORIES,
   CATEGORY_EMOJI,
+  SCHEDULE_LABEL,
+  WEEKDAYS,
   categoryToken,
   coinsFor,
+  generateRandomPin,
   useAddTask,
   useAllCompletions,
+  useCreateKid,
+  useDeleteKid,
   useDeleteTask,
+  useDisputeCompletion,
+  useFamilyCompletionsRealtime,
   useKids,
   useMarkDelivered,
   useParentProfile,
   usePurchases,
+  useRegeneratePin,
+  useReviewFeed,
   useSession,
   useTasks,
   useUpdateTask,
   type Category,
   type Frequency,
+  type ScheduleType,
   type Task,
 } from "@/lib/app-store";
 import { TopBar } from "@/components/RoleSwitcher";
@@ -33,12 +43,16 @@ export const Route = createFileRoute("/parent")({
   component: ParentPage,
 });
 
+type ParentTab = "tasks" | "family" | "review" | "approvals";
+
 type FormState = {
   title: string;
   category: Category;
   assignee_id: string;
   coins: number;
   frequency: Frequency;
+  days_of_week: number[];
+  schedule_type: ScheduleType;
 };
 
 function ParentPage() {
@@ -47,23 +61,48 @@ function ParentPage() {
   const parentId = profileQ.data?.id;
   const kidsQ = useKids(parentId);
   const tasksQ = useTasks(parentId);
-  const kidIds = (kidsQ.data ?? []).map((k) => k.id);
+  const kids = kidsQ.data ?? [];
+  const kidIds = useMemo(() => kids.map((k) => k.id), [kids]);
   const completionsQ = useAllCompletions(kidIds);
   const purchasesQ = usePurchases(kidIds);
+  const reviewQ = useReviewFeed(kidIds);
+
+  useFamilyCompletionsRealtime(kidIds);
 
   const addTask = useAddTask(parentId);
   const updateTask = useUpdateTask();
   const deleteTask = useDeleteTask();
   const markDelivered = useMarkDelivered();
+  const createKid = useCreateKid();
+  const deleteKid = useDeleteKid();
+  const regenPin = useRegeneratePin();
+  const disputeCompletion = useDisputeCompletion();
 
-  const kids = kidsQ.data ?? [];
   const tasks = tasksQ.data ?? [];
   const purchases = purchasesQ.data ?? [];
 
-  const [tab, setTab] = useState<"tasks" | "approvals">("tasks");
+  const [tab, setTab] = useState<ParentTab>("tasks");
   const [editing, setEditing] = useState<Task | null>(null);
   const [creating, setCreating] = useState(false);
   const [filter, setFilter] = useState<string>("all");
+
+  // Track last-seen review count to badge new completions
+  const [seenReviewCount, setSeenReviewCount] = useState(0);
+  const initRef = useRef(false);
+  useEffect(() => {
+    if (!initRef.current && reviewQ.data) {
+      setSeenReviewCount(reviewQ.data.length);
+      initRef.current = true;
+    }
+  }, [reviewQ.data]);
+  useEffect(() => {
+    if (tab === "review" && reviewQ.data) setSeenReviewCount(reviewQ.data.length);
+  }, [tab, reviewQ.data]);
+  const newReviewCount = Math.max(0, (reviewQ.data?.length ?? 0) - seenReviewCount);
+
+  // Family form state
+  const [showAddKid, setShowAddKid] = useState(false);
+  const [newKid, setNewKid] = useState({ name: "", emoji: "🙂", pin: generateRandomPin() });
 
   const defaultAssignee = kids[0]?.id ?? "";
   const blank: FormState = {
@@ -72,6 +111,8 @@ function ParentPage() {
     assignee_id: defaultAssignee,
     coins: 5,
     frequency: "daily",
+    days_of_week: [1, 2, 3, 4, 5, 6, 7],
+    schedule_type: "always",
   };
   const [form, setForm] = useState<FormState>(blank);
 
@@ -87,6 +128,8 @@ function ParentPage() {
       assignee_id: t.assignee_id,
       coins: t.coins,
       frequency: t.frequency,
+      days_of_week: t.days_of_week ?? [1, 2, 3, 4, 5, 6, 7],
+      schedule_type: t.schedule_type ?? "always",
     });
     setEditing(t);
     setCreating(true);
@@ -100,6 +143,7 @@ function ParentPage() {
     e.preventDefault();
     if (!form.title.trim()) return toast.error("Title required");
     if (!form.assignee_id) return toast.error("Pick an assignee");
+    if (form.days_of_week.length === 0) return toast.error("Pick at least one day");
     if (editing) {
       updateTask.mutate(
         { id: editing.id, patch: form },
@@ -126,6 +170,7 @@ function ParentPage() {
   const pending = purchases.filter((p) => !p.delivered);
   const loading = profileQ.isLoading || kidsQ.isLoading || tasksQ.isLoading;
   const kidById = Object.fromEntries(kids.map((k) => [k.id, k] as const));
+
 
   return (
     <div>
@@ -158,23 +203,34 @@ function ParentPage() {
           </div>
         </div>
 
-        <div className="mt-4 flex gap-2 rounded-full bg-muted p-1">
-          {(["tasks", "approvals"] as const).map((t) => (
+        <div className="mt-4 grid grid-cols-4 gap-1 rounded-full bg-muted p-1">
+          {(
+            [
+              { id: "tasks", label: "Tasks", badge: 0 },
+              { id: "family", label: "Family", badge: 0 },
+              { id: "review", label: "Review", badge: newReviewCount },
+              { id: "approvals", label: "Rewards", badge: pending.length },
+            ] as { id: ParentTab; label: string; badge: number }[]
+          ).map((t) => (
             <button
-              key={t}
-              onClick={() => setTab(t)}
-              className={`flex-1 rounded-full py-2 text-sm font-extrabold ${
-                tab === t ? "bg-card shadow-sm" : "text-muted-foreground"
+              key={t.id}
+              onClick={() => setTab(t.id)}
+              className={`relative rounded-full py-2 text-xs font-extrabold ${
+                tab === t.id ? "bg-card shadow-sm" : "text-muted-foreground"
               }`}
             >
-              {t === "tasks"
-                ? "Tasks"
-                : `Approvals${pending.length ? ` (${pending.length})` : ""}`}
+              {t.label}
+              {t.badge > 0 && (
+                <span className="absolute -right-0.5 -top-0.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-extrabold text-destructive-foreground shadow">
+                  {t.badge > 99 ? "99+" : t.badge}
+                </span>
+              )}
             </button>
           ))}
         </div>
 
         {tab === "tasks" ? (
+
           <div className="mt-4">
             <div className="mb-3 flex items-center justify-between gap-2">
               <div className="flex gap-1 rounded-full border border-border bg-card p-1">
@@ -274,7 +330,7 @@ function ParentPage() {
               )}
             </div>
           </div>
-        ) : (
+        ) : tab === "approvals" ? (
           <div className="mt-4 space-y-2">
             <h2 className="mb-1 text-xs font-extrabold uppercase tracking-widest text-muted-foreground">
               Pending ({pending.length})
@@ -344,6 +400,43 @@ function ParentPage() {
                 );
               })}
           </div>
+        ) : tab === "family" ? (
+          <FamilyPane
+            kids={kids}
+            onAdd={() => {
+              setNewKid({ name: "", emoji: "🙂", pin: generateRandomPin() });
+              setShowAddKid(true);
+            }}
+            onDelete={(id, name) => {
+              if (!confirm(`Remove ${name}? This deletes their account and tasks.`)) return;
+              deleteKid.mutate(id, {
+                onSuccess: () => toast.success(`${name} removed`),
+                onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
+              });
+            }}
+            onRegenPin={(id, name) => {
+              const pin = generateRandomPin();
+              regenPin.mutate(
+                { kidId: id, pin },
+                {
+                  onSuccess: () => toast.success(`New PIN for ${name}: ${pin}`),
+                  onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
+                },
+              );
+            }}
+          />
+        ) : (
+          <ReviewPane
+            items={reviewQ.data ?? []}
+            loading={reviewQ.isLoading}
+            kidById={kidById}
+            onDispute={(id) => {
+              if (!confirm("Dispute and remove this completion?")) return;
+              disputeCompletion.mutate(id, {
+                onSuccess: () => toast.success("Completion removed"),
+              });
+            }}
+          />
         )}
 
         <div className="mt-8 text-center">
@@ -461,6 +554,65 @@ function ParentPage() {
               />
             </label>
 
+            <label className="mt-3 block">
+              <span className="text-xs font-bold text-muted-foreground">Active days</span>
+              <div className="mt-1 flex gap-1">
+                {WEEKDAYS.map((d) => {
+                  const sel = form.days_of_week.includes(d.n);
+                  return (
+                    <button
+                      type="button"
+                      key={d.n}
+                      onClick={() =>
+                        setForm({
+                          ...form,
+                          days_of_week: sel
+                            ? form.days_of_week.filter((x) => x !== d.n)
+                            : [...form.days_of_week, d.n].sort(),
+                        })
+                      }
+                      className={`flex-1 rounded-lg py-1.5 text-[11px] font-extrabold ${
+                        sel
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-muted text-muted-foreground"
+                      }`}
+                    >
+                      {d.short}
+                    </button>
+                  );
+                })}
+              </div>
+            </label>
+
+            <label className="mt-3 block">
+              <span className="text-xs font-bold text-muted-foreground">Schedule type</span>
+              <div className="mt-1 grid grid-cols-3 gap-1.5">
+                {(["always", "school_days", "holidays"] as ScheduleType[]).map((s) => (
+                  <button
+                    type="button"
+                    key={s}
+                    onClick={() => {
+                      const days =
+                        s === "school_days"
+                          ? [1, 2, 3, 4, 5]
+                          : s === "holidays"
+                            ? [6, 7]
+                            : [1, 2, 3, 4, 5, 6, 7];
+                      setForm({ ...form, schedule_type: s, days_of_week: days });
+                    }}
+                    className={`rounded-xl py-2 text-xs font-extrabold ${
+                      form.schedule_type === s
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted text-muted-foreground"
+                    }`}
+                  >
+                    {SCHEDULE_LABEL[s]}
+                  </button>
+                ))}
+              </div>
+            </label>
+
+
             <div className="mt-5 flex gap-2">
               {editing && (
                 <button
@@ -495,6 +647,243 @@ function ParentPage() {
           </form>
         </div>
       )}
+
+      {showAddKid && (
+        <div
+          className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 sm:items-center"
+          onClick={() => setShowAddKid(false)}
+        >
+          <form
+            onClick={(e) => e.stopPropagation()}
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (!newKid.name.trim()) return toast.error("Name required");
+              if (!/^\d{6}$/.test(newKid.pin)) return toast.error("PIN must be 6 digits");
+              createKid.mutate(newKid, {
+                onSuccess: () => {
+                  toast.success(`${newKid.name} added! PIN: ${newKid.pin}`);
+                  setShowAddKid(false);
+                },
+                onError: (err) => toast.error(err instanceof Error ? err.message : "Failed"),
+              });
+            }}
+            className="w-full max-w-md rounded-t-3xl bg-card p-5 shadow-2xl sm:rounded-3xl"
+          >
+            <div className="mb-3 flex items-center justify-between">
+              <h3 className="text-lg font-extrabold">Add a child</h3>
+              <button
+                type="button"
+                onClick={() => setShowAddKid(false)}
+                className="rounded-full p-1 hover:bg-muted"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <label className="block">
+              <span className="text-xs font-bold text-muted-foreground">Name</span>
+              <input
+                value={newKid.name}
+                onChange={(e) => setNewKid({ ...newKid, name: e.target.value })}
+                placeholder="e.g. Rosa"
+                className="mt-1 w-full rounded-xl border-2 border-border bg-background px-3 py-2 font-bold outline-none focus:border-primary"
+                autoFocus
+              />
+            </label>
+
+            <label className="mt-3 block">
+              <span className="text-xs font-bold text-muted-foreground">Avatar (emoji)</span>
+              <div className="mt-1 flex flex-wrap gap-1.5">
+                {["🌸", "🦊", "🐻", "🐯", "🐼", "🦄", "🐶", "🐱", "🦁", "🐵", "🐧", "🐸"].map(
+                  (e) => (
+                    <button
+                      type="button"
+                      key={e}
+                      onClick={() => setNewKid({ ...newKid, emoji: e })}
+                      className={`h-10 w-10 rounded-xl text-xl ${
+                        newKid.emoji === e ? "bg-primary/20 ring-2 ring-primary" : "bg-muted"
+                      }`}
+                    >
+                      {e}
+                    </button>
+                  ),
+                )}
+              </div>
+            </label>
+
+            <label className="mt-3 block">
+              <span className="text-xs font-bold text-muted-foreground">
+                6-digit PIN (kid uses this to sign in)
+              </span>
+              <div className="mt-1 flex gap-2">
+                <input
+                  value={newKid.pin}
+                  onChange={(e) =>
+                    setNewKid({ ...newKid, pin: e.target.value.replace(/\D/g, "").slice(0, 6) })
+                  }
+                  inputMode="numeric"
+                  className="flex-1 rounded-xl border-2 border-border bg-background px-3 py-2 text-center font-mono text-lg font-extrabold tracking-[0.4em] outline-none focus:border-primary"
+                />
+                <button
+                  type="button"
+                  onClick={() => setNewKid({ ...newKid, pin: generateRandomPin() })}
+                  className="rounded-xl bg-muted px-3"
+                  aria-label="Randomize PIN"
+                >
+                  <RefreshCw className="h-4 w-4" />
+                </button>
+              </div>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Share this PIN with your child. They tap "Login as Kid" on the sign-in screen.
+              </p>
+            </label>
+
+            <button
+              type="submit"
+              disabled={createKid.isPending}
+              className="mt-5 w-full rounded-full bg-primary py-3 font-extrabold text-primary-foreground btn-chunky active:btn-chunky-press disabled:opacity-50"
+            >
+              {createKid.isPending ? "Creating…" : "Create child account"}
+            </button>
+          </form>
+        </div>
+      )}
     </div>
   );
 }
+
+// ============================================================
+
+function FamilyPane({
+  kids,
+  onAdd,
+  onDelete,
+  onRegenPin,
+}: {
+  kids: import("@/lib/app-store").Profile[];
+  onAdd: () => void;
+  onDelete: (id: string, name: string) => void;
+  onRegenPin: (id: string, name: string) => void;
+}) {
+  return (
+    <div className="mt-4">
+      <div className="mb-3 flex items-center justify-between">
+        <h2 className="text-sm font-extrabold uppercase tracking-widest text-muted-foreground">
+          Family ({kids.length})
+        </h2>
+        <button
+          onClick={onAdd}
+          className="flex items-center gap-1 rounded-full bg-primary px-3 py-2 text-sm font-extrabold text-primary-foreground btn-chunky active:btn-chunky-press"
+        >
+          <UserPlus className="h-4 w-4" /> Add child
+        </button>
+      </div>
+
+      {kids.length === 0 && (
+        <p className="rounded-2xl border-2 border-dashed border-border p-6 text-center text-sm text-muted-foreground">
+          No children yet. Tap "Add child" to create their profile and PIN.
+        </p>
+      )}
+
+      <div className="space-y-2">
+        {kids.map((k) => (
+          <div
+            key={k.id}
+            className="flex items-center gap-3 rounded-2xl border border-border bg-card px-3 py-3"
+          >
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-muted text-2xl">
+              {k.emoji ?? "🙂"}
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="truncate font-extrabold">{k.name}</div>
+              <div className="mt-0.5 flex items-center gap-2 text-xs font-bold text-muted-foreground">
+                <KeyRound className="h-3 w-3" />
+                <span className="font-mono tracking-[0.3em] text-foreground">
+                  {k.pin_code ?? "— —"}
+                </span>
+                <span>🔥 {k.streak_count}</span>
+              </div>
+            </div>
+            <button
+              onClick={() => onRegenPin(k.id, k.name)}
+              className="rounded-lg p-2 text-muted-foreground hover:bg-muted"
+              aria-label="New PIN"
+              title="Generate new PIN"
+            >
+              <RefreshCw className="h-4 w-4" />
+            </button>
+            <button
+              onClick={() => onDelete(k.id, k.name)}
+              className="rounded-lg p-2 text-destructive hover:bg-destructive/10"
+              aria-label="Remove child"
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ReviewPane({
+  items,
+  loading,
+  kidById,
+  onDispute,
+}: {
+  items: import("@/lib/app-store").ReviewItem[];
+  loading: boolean;
+  kidById: Record<string, import("@/lib/app-store").Profile>;
+  onDispute: (id: string) => void;
+}) {
+  return (
+    <div className="mt-4 space-y-2">
+      <h2 className="mb-1 text-xs font-extrabold uppercase tracking-widest text-muted-foreground">
+        Recent completions
+      </h2>
+      {loading && <p className="text-sm text-muted-foreground">Loading…</p>}
+      {!loading && items.length === 0 && (
+        <p className="rounded-2xl border-2 border-dashed border-border p-6 text-center text-sm text-muted-foreground">
+          No completions yet. They'll appear here in real-time. ⚡
+        </p>
+      )}
+      {items.map((it) => {
+        const k = kidById[it.kid_id];
+        const cat = it.task?.category;
+        const token = cat ? categoryToken(cat) : "primary";
+        return (
+          <div
+            key={it.id}
+            className="flex items-center gap-3 rounded-2xl border border-border bg-card px-3 py-3"
+          >
+            <div
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-xl"
+              style={{
+                backgroundColor: cat
+                  ? `color-mix(in oklab, var(--${token}) 22%, white)`
+                  : undefined,
+              }}
+            >
+              {cat ? CATEGORY_EMOJI[cat] : "✅"}
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="truncate font-bold">{it.task?.title ?? "Deleted quest"}</div>
+              <div className="mt-0.5 text-xs text-muted-foreground">
+                {k?.emoji ?? "🙂"} {k?.name ?? "?"} · 🪙 {it.coins_awarded} ·{" "}
+                {new Date(it.created_at).toLocaleString()}
+              </div>
+            </div>
+            <button
+              onClick={() => onDispute(it.id)}
+              className="rounded-full bg-destructive/10 px-3 py-1.5 text-xs font-extrabold text-destructive"
+            >
+              Dispute
+            </button>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+

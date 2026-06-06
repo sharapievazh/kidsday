@@ -66,7 +66,42 @@ export type Profile = {
   color: string | null;
   streak_count: number;
   streak_last_date: string | null;
+  pin_code: string | null;
 };
+
+
+export type ScheduleType = "school_days" | "holidays" | "always";
+
+export const SCHEDULE_LABEL: Record<ScheduleType, string> = {
+  always: "Always",
+  school_days: "School days",
+  holidays: "Holidays",
+};
+
+// ISO weekday: 1=Mon ... 7=Sun
+export const WEEKDAYS: { n: number; short: string }[] = [
+  { n: 1, short: "Mon" },
+  { n: 2, short: "Tue" },
+  { n: 3, short: "Wed" },
+  { n: 4, short: "Thu" },
+  { n: 5, short: "Fri" },
+  { n: 6, short: "Sat" },
+  { n: 7, short: "Sun" },
+];
+
+export function todayIsoWeekday(): number {
+  const js = new Date().getDay(); // 0=Sun..6=Sat
+  return js === 0 ? 7 : js;
+}
+
+export function isTaskActiveToday(task: Pick<Task, "schedule_type" | "days_of_week">): boolean {
+  const d = todayIsoWeekday();
+  if (!task.days_of_week?.includes(d)) return false;
+  if (task.schedule_type === "always") return true;
+  if (task.schedule_type === "school_days") return d >= 1 && d <= 5;
+  if (task.schedule_type === "holidays") return d === 6 || d === 7;
+  return true;
+}
 
 export type Task = {
   id: string;
@@ -76,6 +111,8 @@ export type Task = {
   category: Category;
   coins: number;
   frequency: Frequency;
+  days_of_week: number[];
+  schedule_type: ScheduleType;
 };
 
 export type Completion = {
@@ -423,19 +460,14 @@ export function coinsFor(
 
 // ============== SEED INITIAL DATA ==============
 
-const INITIAL_KIDS = [
-  { name: "Rosa", emoji: "🌸", color: "var(--piano)" },
-  { name: "Ansar", emoji: "🦊", color: "var(--hygiene)" },
-];
-
 const INITIAL_TASKS_TEMPLATE: Array<Omit<Task, "id" | "parent_id" | "assignee_id">> = [
-  { title: "Brush teeth (morning)", category: "Hygiene", coins: 5, frequency: "daily" },
-  { title: "Make the bed", category: "Chores", coins: 5, frequency: "daily" },
-  { title: "Read 20 minutes", category: "Reading", coins: 10, frequency: "daily" },
-  { title: "Piano practice", category: "Piano", coins: 15, frequency: "daily" },
-  { title: "Chess puzzle", category: "Chess", coins: 10, frequency: "daily" },
-  { title: "Self-study lesson", category: "Self-Education", coins: 10, frequency: "daily" },
-  { title: "Outdoor play 30 min", category: "Sports", coins: 10, frequency: "daily" },
+  { title: "Brush teeth (morning)", category: "Hygiene", coins: 5, frequency: "daily", days_of_week: [1,2,3,4,5,6,7], schedule_type: "always" },
+  { title: "Make the bed", category: "Chores", coins: 5, frequency: "daily", days_of_week: [1,2,3,4,5,6,7], schedule_type: "always" },
+  { title: "Read 20 minutes", category: "Reading", coins: 10, frequency: "daily", days_of_week: [1,2,3,4,5,6,7], schedule_type: "always" },
+  { title: "Piano practice", category: "Piano", coins: 15, frequency: "daily", days_of_week: [1,2,3,4,5], schedule_type: "school_days" },
+  { title: "Chess puzzle", category: "Chess", coins: 10, frequency: "daily", days_of_week: [1,2,3,4,5,6,7], schedule_type: "always" },
+  { title: "Self-study lesson", category: "Self-Education", coins: 10, frequency: "daily", days_of_week: [1,2,3,4,5], schedule_type: "school_days" },
+  { title: "Outdoor play 30 min", category: "Sports", coins: 10, frequency: "daily", days_of_week: [6,7], schedule_type: "holidays" },
 ];
 
 const INITIAL_REWARDS = [
@@ -448,45 +480,45 @@ const INITIAL_REWARDS = [
   { name: "Trip to the park", emoji: "🛝", cost: 60 },
 ];
 
+// Seeds starter rewards + (when kids already exist) starter tasks. Kids are
+// added through Family Management so they get PIN-based auth accounts.
 export function useSeedFamilyIfEmpty(parent: Profile | null | undefined) {
   const qc = useQueryClient();
   useEffect(() => {
     if (!parent) return;
     let cancelled = false;
     (async () => {
+      const { data: rewards } = await supabase
+        .from("rewards")
+        .select("id")
+        .eq("parent_id", parent.id)
+        .limit(1);
+      if (cancelled) return;
+      if (!rewards || rewards.length === 0) {
+        const rewardRows = INITIAL_REWARDS.map((r) => ({ ...r, parent_id: parent.id }));
+        await supabase.from("rewards").insert(rewardRows);
+      }
+
       const { data: kids } = await supabase
         .from("profiles")
         .select("id")
-        .eq("parent_id", parent.id);
-      if (cancelled || (kids && kids.length > 0)) return;
-
-      const newKids: { id: string }[] = [];
-      for (const k of INITIAL_KIDS) {
-        const { data } = await supabase
-          .from("profiles")
-          .insert({
+        .eq("parent_id", parent.id)
+        .eq("role", "kid");
+      const { data: tasks } = await supabase
+        .from("tasks")
+        .select("id")
+        .eq("parent_id", parent.id)
+        .limit(1);
+      if (kids && kids.length > 0 && (!tasks || tasks.length === 0)) {
+        const taskRows = kids.flatMap((k) =>
+          INITIAL_TASKS_TEMPLATE.map((t) => ({
+            ...t,
             parent_id: parent.id,
-            role: "kid",
-            name: k.name,
-            emoji: k.emoji,
-            color: k.color,
-          })
-          .select("id")
-          .single();
-        if (data) newKids.push(data);
+            assignee_id: k.id,
+          })),
+        );
+        if (taskRows.length) await supabase.from("tasks").insert(taskRows);
       }
-
-      const taskRows = newKids.flatMap((k) =>
-        INITIAL_TASKS_TEMPLATE.map((t) => ({
-          ...t,
-          parent_id: parent.id,
-          assignee_id: k.id,
-        })),
-      );
-      if (taskRows.length) await supabase.from("tasks").insert(taskRows);
-
-      const rewardRows = INITIAL_REWARDS.map((r) => ({ ...r, parent_id: parent.id }));
-      await supabase.from("rewards").insert(rewardRows);
 
       qc.invalidateQueries();
     })();
@@ -495,3 +527,115 @@ export function useSeedFamilyIfEmpty(parent: Profile | null | undefined) {
     };
   }, [parent, qc]);
 }
+
+// ============== KID MUTATIONS (PIN-based auth) ==============
+
+export function useCreateKid() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (vars: { name: string; emoji: string; pin: string }) => {
+      const { createKidFn } = await import("./kids.functions");
+      return createKidFn({ data: vars });
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["kids"] }),
+  });
+}
+
+export function useDeleteKid() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (kidId: string) => {
+      const { deleteKidFn } = await import("./kids.functions");
+      return deleteKidFn({ data: { kidId } });
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["kids"] }),
+  });
+}
+
+export function useRegeneratePin() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (vars: { kidId: string; pin: string }) => {
+      const { regenerateKidPinFn } = await import("./kids.functions");
+      return regenerateKidPinFn({ data: vars });
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["kids"] }),
+  });
+}
+
+export function generateRandomPin(): string {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
+// ============== REALTIME: family task completions ==============
+
+export function useFamilyCompletionsRealtime(kidIds: string[]) {
+  const qc = useQueryClient();
+  const key = kidIds.slice().sort().join(",");
+  useEffect(() => {
+    if (kidIds.length === 0) return;
+    const channel = supabase
+      .channel("family-completions")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "task_completions" },
+        (payload) => {
+          const row = (payload.new ?? payload.old) as { kid_id?: string } | null;
+          if (!row?.kid_id || !kidIds.includes(row.kid_id)) return;
+          qc.invalidateQueries({ queryKey: ["completions-all"] });
+          qc.invalidateQueries({ queryKey: ["review-feed"] });
+        },
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [qc, key]);
+}
+
+// ============== REVIEW FEED ==============
+
+export type ReviewItem = {
+  id: string;
+  task_id: string;
+  kid_id: string;
+  completed_on: string;
+  created_at: string;
+  coins_awarded: number;
+  task: { title: string; category: Category } | null;
+};
+
+export function useReviewFeed(kidIds: string[]) {
+  return useQuery({
+    queryKey: ["review-feed", kidIds.slice().sort().join(",")],
+    enabled: kidIds.length > 0,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("task_completions")
+        .select(
+          "id, task_id, kid_id, completed_on, created_at, coins_awarded, task:tasks(title,category)",
+        )
+        .in("kid_id", kidIds)
+        .order("created_at", { ascending: false })
+        .limit(50);
+      if (error) throw error;
+      return (data ?? []) as unknown as ReviewItem[];
+    },
+  });
+}
+
+export function useDisputeCompletion() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("task_completions").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["completions-all"] });
+      qc.invalidateQueries({ queryKey: ["review-feed"] });
+    },
+  });
+}
+
