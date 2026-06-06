@@ -65,7 +65,7 @@ export type KidProfile = {
 
 export const KIDS: Record<KidId, KidProfile> = {
   rosa: { id: "rosa", name: "Rosa", emoji: "🌸", color: "var(--piano)" },
-  brother: { id: "brother", name: "Brother", emoji: "🦊", color: "var(--hygiene)" },
+  brother: { id: "brother", name: "Ansar", emoji: "🦊", color: "var(--hygiene)" },
 };
 
 const today = () => new Date().toISOString().slice(0, 10);

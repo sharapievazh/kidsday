@@ -18,7 +18,7 @@ import { TopBar } from "@/components/RoleSwitcher";
 export const Route = createFileRoute("/parent")({
   head: () => ({
     meta: [
-      { title: "Parent Dashboard — QuestKids" },
+      { title: "Parent Dashboard — Kids Day" },
       { name: "description", content: "Manage quests and approve rewards." },
     ],
   }),
