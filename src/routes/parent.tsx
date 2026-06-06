@@ -400,6 +400,43 @@ function ParentPage() {
                 );
               })}
           </div>
+        ) : tab === "family" ? (
+          <FamilyPane
+            kids={kids}
+            onAdd={() => {
+              setNewKid({ name: "", emoji: "🙂", pin: generateRandomPin() });
+              setShowAddKid(true);
+            }}
+            onDelete={(id, name) => {
+              if (!confirm(`Remove ${name}? This deletes their account and tasks.`)) return;
+              deleteKid.mutate(id, {
+                onSuccess: () => toast.success(`${name} removed`),
+                onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
+              });
+            }}
+            onRegenPin={(id, name) => {
+              const pin = generateRandomPin();
+              regenPin.mutate(
+                { kidId: id, pin },
+                {
+                  onSuccess: () => toast.success(`New PIN for ${name}: ${pin}`),
+                  onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
+                },
+              );
+            }}
+          />
+        ) : (
+          <ReviewPane
+            items={reviewQ.data ?? []}
+            loading={reviewQ.isLoading}
+            kidById={kidById}
+            onDispute={(id) => {
+              if (!confirm("Dispute and remove this completion?")) return;
+              disputeCompletion.mutate(id, {
+                onSuccess: () => toast.success("Completion removed"),
+              });
+            }}
+          />
         )}
 
         <div className="mt-8 text-center">
