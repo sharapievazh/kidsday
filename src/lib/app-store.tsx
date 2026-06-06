@@ -66,6 +66,11 @@ export type Profile = {
   color: string | null;
   streak_count: number;
   streak_last_date: string | null;
+  pin_code: string | null;
+};
+
+// dup brace below removed by next line
+type _PlaceholderUnused = never;
 };
 
 export type ScheduleType = "school_days" | "holidays" | "always";
