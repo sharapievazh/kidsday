@@ -554,6 +554,65 @@ function ParentPage() {
               />
             </label>
 
+            <label className="mt-3 block">
+              <span className="text-xs font-bold text-muted-foreground">Active days</span>
+              <div className="mt-1 flex gap-1">
+                {WEEKDAYS.map((d) => {
+                  const sel = form.days_of_week.includes(d.n);
+                  return (
+                    <button
+                      type="button"
+                      key={d.n}
+                      onClick={() =>
+                        setForm({
+                          ...form,
+                          days_of_week: sel
+                            ? form.days_of_week.filter((x) => x !== d.n)
+                            : [...form.days_of_week, d.n].sort(),
+                        })
+                      }
+                      className={`flex-1 rounded-lg py-1.5 text-[11px] font-extrabold ${
+                        sel
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-muted text-muted-foreground"
+                      }`}
+                    >
+                      {d.short}
+                    </button>
+                  );
+                })}
+              </div>
+            </label>
+
+            <label className="mt-3 block">
+              <span className="text-xs font-bold text-muted-foreground">Schedule type</span>
+              <div className="mt-1 grid grid-cols-3 gap-1.5">
+                {(["always", "school_days", "holidays"] as ScheduleType[]).map((s) => (
+                  <button
+                    type="button"
+                    key={s}
+                    onClick={() => {
+                      const days =
+                        s === "school_days"
+                          ? [1, 2, 3, 4, 5]
+                          : s === "holidays"
+                            ? [6, 7]
+                            : [1, 2, 3, 4, 5, 6, 7];
+                      setForm({ ...form, schedule_type: s, days_of_week: days });
+                    }}
+                    className={`rounded-xl py-2 text-xs font-extrabold ${
+                      form.schedule_type === s
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted text-muted-foreground"
+                    }`}
+                  >
+                    {SCHEDULE_LABEL[s]}
+                  </button>
+                ))}
+              </div>
+            </label>
+
+
             <div className="mt-5 flex gap-2">
               {editing && (
                 <button
