@@ -1,0 +1,143 @@
+import { createServerFn } from "@tanstack/react-start";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { z } from "zod";
+
+const KID_EMAIL_DOMAIN = "kidsday.app";
+
+const createKidSchema = z.object({
+  name: z.string().min(1).max(60),
+  emoji: z.string().min(1).max(8).default("🙂"),
+  pin: z.string().regex(/^\d{6}$/, "PIN must be 6 digits"),
+});
+
+export const createKidFn = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: unknown) => createKidSchema.parse(data))
+  .handler(async ({ data, context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    // Find current parent profile id
+    const { data: parentProfile, error: pErr } = await context.supabase
+      .from("profiles")
+      .select("id, role")
+      .eq("user_id", context.userId)
+      .eq("role", "parent")
+      .maybeSingle();
+    if (pErr) throw new Error(pErr.message);
+    if (!parentProfile) throw new Error("Parent profile not found");
+
+    // Ensure PIN unique
+    const { data: existing } = await supabaseAdmin
+      .from("profiles")
+      .select("id")
+      .eq("pin_code", data.pin)
+      .maybeSingle();
+    if (existing) throw new Error("PIN already in use, pick another");
+
+    const email = `kid-${crypto.randomUUID()}@${KID_EMAIL_DOMAIN}`;
+    const { data: created, error: cErr } = await supabaseAdmin.auth.admin.createUser({
+      email,
+      password: data.pin,
+      email_confirm: true,
+      user_metadata: { kind: "kid", name: data.name, parent_id: parentProfile.id },
+    });
+    if (cErr || !created.user) throw new Error(cErr?.message ?? "Failed to create auth user");
+
+    const { data: profile, error: insErr } = await supabaseAdmin
+      .from("profiles")
+      .insert({
+        user_id: created.user.id,
+        parent_id: parentProfile.id,
+        role: "kid",
+        name: data.name,
+        emoji: data.emoji,
+        pin_code: data.pin,
+      })
+      .select("*")
+      .single();
+    if (insErr) {
+      await supabaseAdmin.auth.admin.deleteUser(created.user.id);
+      throw new Error(insErr.message);
+    }
+    return { profile };
+  });
+
+const deleteKidSchema = z.object({ kidId: z.string().uuid() });
+
+export const deleteKidFn = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: unknown) => deleteKidSchema.parse(data))
+  .handler(async ({ data, context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: kid } = await context.supabase
+      .from("profiles")
+      .select("id, user_id")
+      .eq("id", data.kidId)
+      .maybeSingle();
+    if (!kid) throw new Error("Kid not found");
+    if (kid.user_id) {
+      await supabaseAdmin.auth.admin.deleteUser(kid.user_id);
+    }
+    const { error } = await supabaseAdmin.from("profiles").delete().eq("id", data.kidId);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+const regenPinSchema = z.object({
+  kidId: z.string().uuid(),
+  pin: z.string().regex(/^\d{6}$/),
+});
+
+export const regenerateKidPinFn = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: unknown) => regenPinSchema.parse(data))
+  .handler(async ({ data, context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: kid } = await context.supabase
+      .from("profiles")
+      .select("id, user_id, parent_id")
+      .eq("id", data.kidId)
+      .maybeSingle();
+    if (!kid || !kid.user_id) throw new Error("Kid not found");
+
+    const { data: dup } = await supabaseAdmin
+      .from("profiles")
+      .select("id")
+      .eq("pin_code", data.pin)
+      .neq("id", data.kidId)
+      .maybeSingle();
+    if (dup) throw new Error("PIN already in use");
+
+    const { error: aErr } = await supabaseAdmin.auth.admin.updateUserById(kid.user_id, {
+      password: data.pin,
+    });
+    if (aErr) throw new Error(aErr.message);
+    const { error: uErr } = await supabaseAdmin
+      .from("profiles")
+      .update({ pin_code: data.pin })
+      .eq("id", data.kidId);
+    if (uErr) throw new Error(uErr.message);
+    return { ok: true };
+  });
+
+const pinLookupSchema = z.object({ pin: z.string().regex(/^\d{6}$/) });
+
+// Public — no auth required. Looks up the technical email by PIN
+// so the client can sign in with email+password (password === pin).
+export const lookupKidEmailByPinFn = createServerFn({ method: "POST" })
+  .inputValidator((data: unknown) => pinLookupSchema.parse(data))
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: profile, error } = await supabaseAdmin
+      .from("profiles")
+      .select("user_id, name")
+      .eq("pin_code", data.pin)
+      .eq("role", "kid")
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!profile?.user_id) throw new Error("Invalid PIN");
+    const { data: userRes, error: uErr } = await supabaseAdmin.auth.admin.getUserById(
+      profile.user_id,
+    );
+    if (uErr || !userRes.user?.email) throw new Error("Kid account missing");
+    return { email: userRes.user.email, name: profile.name };
+  });
