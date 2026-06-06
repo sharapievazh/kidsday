@@ -22,6 +22,7 @@ export type Database = {
           id: string
           name: string
           parent_id: string | null
+          pin_code: string | null
           role: Database["public"]["Enums"]["profile_role"]
           streak_count: number
           streak_last_date: string | null
@@ -35,6 +36,7 @@ export type Database = {
           id?: string
           name: string
           parent_id?: string | null
+          pin_code?: string | null
           role: Database["public"]["Enums"]["profile_role"]
           streak_count?: number
           streak_last_date?: string | null
@@ -48,6 +50,7 @@ export type Database = {
           id?: string
           name?: string
           parent_id?: string | null
+          pin_code?: string | null
           role?: Database["public"]["Enums"]["profile_role"]
           streak_count?: number
           streak_last_date?: string | null
@@ -198,9 +201,11 @@ export type Database = {
           category: Database["public"]["Enums"]["task_category"]
           coins: number
           created_at: string
+          days_of_week: number[]
           frequency: Database["public"]["Enums"]["task_frequency"]
           id: string
           parent_id: string
+          schedule_type: Database["public"]["Enums"]["schedule_type"]
           title: string
           updated_at: string
         }
@@ -209,9 +214,11 @@ export type Database = {
           category: Database["public"]["Enums"]["task_category"]
           coins?: number
           created_at?: string
+          days_of_week?: number[]
           frequency?: Database["public"]["Enums"]["task_frequency"]
           id?: string
           parent_id: string
+          schedule_type?: Database["public"]["Enums"]["schedule_type"]
           title: string
           updated_at?: string
         }
@@ -220,9 +227,11 @@ export type Database = {
           category?: Database["public"]["Enums"]["task_category"]
           coins?: number
           created_at?: string
+          days_of_week?: number[]
           frequency?: Database["public"]["Enums"]["task_frequency"]
           id?: string
           parent_id?: string
+          schedule_type?: Database["public"]["Enums"]["schedule_type"]
           title?: string
           updated_at?: string
         }
@@ -252,6 +261,7 @@ export type Database = {
     }
     Enums: {
       profile_role: "parent" | "kid"
+      schedule_type: "school_days" | "holidays" | "always"
       task_category:
         | "Hygiene"
         | "Chores"
@@ -389,6 +399,7 @@ export const Constants = {
   public: {
     Enums: {
       profile_role: ["parent", "kid"],
+      schedule_type: ["school_days", "holidays", "always"],
       task_category: [
         "Hygiene",
         "Chores",
