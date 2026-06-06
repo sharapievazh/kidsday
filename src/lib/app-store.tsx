@@ -69,9 +69,6 @@ export type Profile = {
   pin_code: string | null;
 };
 
-// dup brace below removed by next line
-type _PlaceholderUnused = never;
-};
 
 export type ScheduleType = "school_days" | "holidays" | "always";
 
