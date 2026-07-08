@@ -194,13 +194,13 @@ function ParentPage() {
 
   return (
     <div>
-      <TopBar title="Parent" />
+      <TopBar title={t("parent")} />
       <div className="px-4 pt-4">
         <div className="rounded-3xl bg-gradient-to-br from-primary to-success p-5 text-primary-foreground shadow">
           <div className="text-xs font-bold uppercase tracking-widest opacity-80">
-            Welcome back
+            {t("welcomeBack")}
           </div>
-          <h1 className="mt-1 text-2xl font-extrabold">Parent Dashboard</h1>
+          <h1 className="mt-1 text-2xl font-extrabold">{t("parentDashboard")}</h1>
           <div className="mt-3 grid grid-cols-2 gap-3">
             {loading ? (
               <>
