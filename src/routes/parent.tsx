@@ -630,7 +630,7 @@ function ParentPage() {
             <div className="mt-3 grid grid-cols-2 gap-3">
               <label className="block">
                 <span className="text-xs font-bold text-muted-foreground">{tr("assignee")}</span>
-                <div className="mt-1 flex gap-1.5">
+                <div className="mt-1 flex flex-wrap gap-1.5">
                   {kids.map((k) => (
                     <button
                       type="button"
@@ -645,6 +645,19 @@ function ParentPage() {
                       {k.emoji ?? "🙂"} {k.name}
                     </button>
                   ))}
+                  {parentId && (
+                    <button
+                      type="button"
+                      onClick={() => setForm({ ...form, assignee_id: parentId })}
+                      className={`flex-1 rounded-xl py-2 text-xs font-extrabold ${
+                        form.assignee_id === parentId
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-muted text-muted-foreground"
+                      }`}
+                    >
+                      {profileQ.data?.emoji ?? "👤"} {tr("assignToSelf")}
+                    </button>
+                  )}
                 </div>
               </label>
               <label className="block">
