@@ -667,7 +667,7 @@ function ParentPage() {
           <form
             onClick={(e) => e.stopPropagation()}
             onSubmit={submit}
-            className="w-full max-w-md rounded-t-3xl bg-card p-5 shadow-2xl sm:rounded-3xl"
+            className="flex max-h-[90vh] w-full max-w-md flex-col overflow-y-auto rounded-t-3xl bg-card p-5 shadow-2xl sm:rounded-3xl"
           >
             <div className="mb-3 flex items-center justify-between">
               <h3 className="text-lg font-extrabold">
@@ -902,7 +902,7 @@ function ParentPage() {
                 onError: (err) => toast.error(err instanceof Error ? err.message : "Failed"),
               });
             }}
-            className="w-full max-w-md rounded-t-3xl bg-card p-5 shadow-2xl sm:rounded-3xl"
+            className="flex max-h-[90vh] w-full max-w-md flex-col overflow-y-auto rounded-t-3xl bg-card p-5 shadow-2xl sm:rounded-3xl"
           >
             <div className="mb-3 flex items-center justify-between">
               <h3 className="text-lg font-extrabold">{tr("addChildTitle")}</h3>
@@ -998,7 +998,7 @@ function ParentPage() {
                 addReward.mutate(payload, { onSuccess: onDone, onError: onErr });
               }
             }}
-            className="w-full max-w-md rounded-t-3xl bg-card p-5 shadow-2xl sm:rounded-3xl"
+            className="flex max-h-[90vh] w-full max-w-md flex-col overflow-y-auto rounded-t-3xl bg-card p-5 shadow-2xl sm:rounded-3xl"
           >
             <div className="mb-3 flex items-center justify-between">
               <h3 className="flex items-center gap-2 text-lg font-extrabold">
