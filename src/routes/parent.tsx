@@ -1086,6 +1086,7 @@ function ReviewPane({
   onDispute: (id: string) => void;
 }) {
   const tr = useT();
+  const { lang } = useLang();
   return (
     <div className="mt-4 space-y-2">
       <h2 className="mb-1 text-xs font-extrabold uppercase tracking-widest text-muted-foreground">
