@@ -103,7 +103,7 @@ function ParentPage() {
   const [filter, setFilter] = useState<string>("all");
   const [editingReward, setEditingReward] = useState<Reward | null>(null);
   const [rewardModal, setRewardModal] = useState(false);
-  const [rewardForm, setRewardForm] = useState({ name: "", emoji: "🎁", cost: 50, active: true });
+  const [rewardForm, setRewardForm] = useState({ name: "", name_ru: "", emoji: "🎁", cost: 50, active: true });
 
 
   // Track last-seen review count to badge new completions
@@ -362,7 +362,7 @@ function ParentPage() {
               <button
                 onClick={() => {
                   setEditingReward(null);
-                  setRewardForm({ name: "", emoji: "🎁", cost: 50, active: true });
+                  setRewardForm({ name: "", name_ru: "", emoji: "🎁", cost: 50, active: true });
                   setRewardModal(true);
                 }}
                 className="flex items-center gap-1 rounded-full bg-primary px-3 py-1.5 text-xs font-extrabold text-primary-foreground btn-chunky active:btn-chunky-press"
@@ -394,6 +394,7 @@ function ParentPage() {
                       setEditingReward(r);
                       setRewardForm({
                         name: r.name,
+                        name_ru: r.name_ru ?? "",
                         emoji: r.emoji ?? "🎁",
                         cost: r.cost,
                         active: r.active,
