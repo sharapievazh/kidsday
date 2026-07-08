@@ -469,27 +469,72 @@ export function coinsFor(
 // ============== SEED INITIAL DATA ==============
 
 const INITIAL_TASKS_TEMPLATE: Array<Omit<Task, "id" | "parent_id" | "assignee_id">> = [
-  { title: "Early wake-up (6–7 AM)", category: "Hygiene", coins: 10, frequency: "daily", days_of_week: [1,2,3,4,5,6,7], schedule_type: "always" },
-  { title: "Workout or morning exercise", category: "Sports", coins: 10, frequency: "daily", days_of_week: [1,2,3,4,5,6,7], schedule_type: "always" },
-  { title: "Book notes / summary of today's reading", category: "Reading", coins: 15, frequency: "daily", days_of_week: [1,2,3,4,5,6,7], schedule_type: "always" },
-  { title: "Home responsibility (chore around the house)", category: "Chores", coins: 10, frequency: "daily", days_of_week: [1,2,3,4,5,6,7], schedule_type: "always" },
-  { title: "Creative project (make something by hand)", category: "Creative", coins: 15, frequency: "daily", days_of_week: [1,2,3,4,5,6,7], schedule_type: "always" },
-  { title: "Brush teeth (morning)", category: "Hygiene", coins: 5, frequency: "daily", days_of_week: [1,2,3,4,5,6,7], schedule_type: "always" },
-  { title: "Make the bed", category: "Chores", coins: 5, frequency: "daily", days_of_week: [1,2,3,4,5,6,7], schedule_type: "always" },
-  { title: "Piano practice", category: "Piano", coins: 15, frequency: "daily", days_of_week: [1,2,3,4,5], schedule_type: "school_days" },
-  { title: "Chess puzzle", category: "Chess", coins: 10, frequency: "daily", days_of_week: [1,2,3,4,5,6,7], schedule_type: "always" },
+  { title: "Early wake-up (6–7 AM)", title_ru: "Ранний подъём (6–7 утра)", category: "Hygiene", coins: 10, frequency: "daily", days_of_week: [1,2,3,4,5,6,7], schedule_type: "always" },
+  { title: "Workout or morning exercise", title_ru: "Тренировка или зарядка", category: "Sports", coins: 10, frequency: "daily", days_of_week: [1,2,3,4,5,6,7], schedule_type: "always" },
+  { title: "Book notes / summary of today's reading", title_ru: "Конспект прочитанного за день", category: "Reading", coins: 15, frequency: "daily", days_of_week: [1,2,3,4,5,6,7], schedule_type: "always" },
+  { title: "Home responsibility (chore around the house)", title_ru: "Домашняя обязанность", category: "Chores", coins: 10, frequency: "daily", days_of_week: [1,2,3,4,5,6,7], schedule_type: "always" },
+  { title: "Creative project (make something by hand)", title_ru: "Творческий проект своими руками", category: "Creative", coins: 15, frequency: "daily", days_of_week: [1,2,3,4,5,6,7], schedule_type: "always" },
+  { title: "Brush teeth (morning)", title_ru: "Почистить зубы (утро)", category: "Hygiene", coins: 5, frequency: "daily", days_of_week: [1,2,3,4,5,6,7], schedule_type: "always" },
+  { title: "Make the bed", title_ru: "Заправить кровать", category: "Chores", coins: 5, frequency: "daily", days_of_week: [1,2,3,4,5,6,7], schedule_type: "always" },
+  { title: "Piano practice", title_ru: "Занятия на пианино", category: "Piano", coins: 15, frequency: "daily", days_of_week: [1,2,3,4,5], schedule_type: "school_days" },
+  { title: "Chess puzzle", title_ru: "Шахматная задача", category: "Chess", coins: 10, frequency: "daily", days_of_week: [1,2,3,4,5,6,7], schedule_type: "always" },
 ];
 
 
 const INITIAL_REWARDS = [
-  { name: "30 min extra screen time", emoji: "📱", cost: 50 },
-  { name: "Choose dinner", emoji: "🍕", cost: 75 },
-  { name: "Ice cream trip", emoji: "🍦", cost: 100 },
-  { name: "Movie night pick", emoji: "🎬", cost: 120 },
-  { name: "Stay up 30 min late", emoji: "🌙", cost: 80 },
-  { name: "New small toy", emoji: "🧸", cost: 250 },
-  { name: "Trip to the park", emoji: "🛝", cost: 60 },
+  { name: "30 min extra screen time", name_ru: "30 мин экранного времени", emoji: "📱", cost: 50 },
+  { name: "Choose dinner", name_ru: "Выбрать ужин", emoji: "🍕", cost: 75 },
+  { name: "Ice cream trip", name_ru: "Пойти за мороженым", emoji: "🍦", cost: 100 },
+  { name: "Movie night pick", name_ru: "Выбрать фильм на вечер", emoji: "🎬", cost: 120 },
+  { name: "Stay up 30 min late", name_ru: "Лечь на 30 мин позже", emoji: "🌙", cost: 80 },
+  { name: "New small toy", name_ru: "Новая маленькая игрушка", emoji: "🧸", cost: 250 },
+  { name: "Trip to the park", name_ru: "Прогулка в парк", emoji: "🛝", cost: 60 },
 ];
+
+// Fallback translations for common seed titles/names, applied when a row
+// has no explicit *_ru value (e.g. rows seeded before the RU column existed).
+const TITLE_RU_FALLBACK: Record<string, string> = {
+  "Brush Teeth": "Почистить зубы",
+  "Brush teeth (morning)": "Почистить зубы (утро)",
+  "Book": "Книга",
+  "Dancing": "Танцы",
+  "bed, table and dish": "Кровать, стол и посуда",
+  "Homework": "Домашнее задание",
+  "Make the bed": "Заправить кровать",
+  "Piano practice": "Занятия на пианино",
+  "Chess puzzle": "Шахматная задача",
+  "Early wake-up (6–7 AM)": "Ранний подъём (6–7 утра)",
+  "Workout or morning exercise": "Тренировка или зарядка",
+  "Book notes / summary of today's reading": "Конспект прочитанного за день",
+  "Home responsibility (chore around the house)": "Домашняя обязанность",
+  "Creative project (make something by hand)": "Творческий проект своими руками",
+};
+
+const REWARD_RU_FALLBACK: Record<string, string> = {
+  "30 min extra screen time": "30 мин экранного времени",
+  "Choose dinner": "Выбрать ужин",
+  "Ice cream trip": "Пойти за мороженым",
+  "Movie night pick": "Выбрать фильм на вечер",
+  "Stay up 30 min late": "Лечь на 30 мин позже",
+  "New small toy": "Новая маленькая игрушка",
+  "Trip to the park": "Прогулка в парк",
+};
+
+export function localizedTaskTitle(
+  task: Pick<Task, "title" | "title_ru">,
+  lang: "en" | "ru",
+): string {
+  if (lang !== "ru") return task.title;
+  return task.title_ru?.trim() || TITLE_RU_FALLBACK[task.title] || task.title;
+}
+
+export function localizedRewardName(
+  reward: Pick<Reward, "name" | "name_ru">,
+  lang: "en" | "ru",
+): string {
+  if (lang !== "ru") return reward.name;
+  return reward.name_ru?.trim() || REWARD_RU_FALLBACK[reward.name] || reward.name;
+}
 
 // Seeds starter rewards + (when kids already exist) starter tasks. Kids are
 // added through Family Management so they get PIN-based auth accounts.
