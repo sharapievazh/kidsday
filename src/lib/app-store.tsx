@@ -114,6 +114,7 @@ export type Task = {
   parent_id: string;
   assignee_id: string;
   title: string;
+  title_ru: string | null;
   category: Category;
   coins: number;
   frequency: Frequency;
@@ -133,6 +134,7 @@ export type Reward = {
   id: string;
   parent_id: string;
   name: string;
+  name_ru: string | null;
   emoji: string | null;
   cost: number;
   active: boolean;
@@ -146,7 +148,7 @@ export type Purchase = {
   delivered: boolean;
   delivered_at: string | null;
   created_at: string;
-  reward?: { name: string; emoji: string | null } | null;
+  reward?: { name: string; name_ru: string | null; emoji: string | null } | null;
 };
 
 const today = () => new Date().toISOString().slice(0, 10);
