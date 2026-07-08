@@ -722,11 +722,12 @@ export function useDisputeCompletion() {
 export function useAddReward(parentId: string | undefined) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (r: { name: string; emoji: string; cost: number; active?: boolean }) => {
+    mutationFn: async (r: { name: string; name_ru?: string | null; emoji: string; cost: number; active?: boolean }) => {
       if (!parentId) throw new Error("No parent");
       const { error } = await supabase.from("rewards").insert({
         parent_id: parentId,
         name: r.name,
+        name_ru: r.name_ru?.trim() || null,
         emoji: r.emoji,
         cost: r.cost,
         active: r.active ?? true,
