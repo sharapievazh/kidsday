@@ -38,6 +38,7 @@ import {
   type Task,
 } from "@/lib/app-store";
 import { TopBar } from "@/components/RoleSwitcher";
+import { useT } from "@/lib/i18n";
 
 
 export const Route = createFileRoute("/parent")({
