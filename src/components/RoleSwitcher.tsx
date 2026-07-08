@@ -50,7 +50,7 @@ export function RoleSwitcher() {
           }`}
         >
           <span className="text-base">👤</span>
-          <span>{useT()("parent")}</span>
+          <span>{t("parent")}</span>
         </button>
       </div>
     </div>
