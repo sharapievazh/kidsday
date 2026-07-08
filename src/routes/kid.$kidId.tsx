@@ -10,6 +10,7 @@ import {
   isTaskActiveToday,
   useAllCompletions,
   useBuyReward,
+  isMoneyReward,
   useKid,
   useParentProfile,
   usePurchases,
