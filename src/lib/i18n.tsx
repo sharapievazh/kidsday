@@ -112,6 +112,10 @@ const DICT = {
     inactive: "Inactive",
     titleRequired: "Please enter a title (English or Russian)",
     nameRequired: "Please enter a name (English or Russian)",
+    moneyPreset: "💵 Money (exchange all coins)",
+    moneyPresetHint: "Any purchase converts ALL current coins into real money.",
+    allCoins: "All",
+    confirmExchange: (n: number) => `Exchange all ${n} coins for money?`,
     // Categories
     cat_Hygiene: "Hygiene",
     cat_Chores: "Chores",
