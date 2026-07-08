@@ -678,7 +678,7 @@ export type ReviewItem = {
   completed_on: string;
   created_at: string;
   coins_awarded: number;
-  task: { title: string; category: Category } | null;
+  task: { title: string; title_ru: string | null; category: Category } | null;
 };
 
 export function useReviewFeed(kidIds: string[]) {
@@ -689,7 +689,7 @@ export function useReviewFeed(kidIds: string[]) {
       const { data, error } = await supabase
         .from("task_completions")
         .select(
-          "id, task_id, kid_id, completed_on, created_at, coins_awarded, task:tasks(title,category)",
+          "id, task_id, kid_id, completed_on, created_at, coins_awarded, task:tasks(title,title_ru,category)",
         )
         .in("kid_id", kidIds)
         .order("created_at", { ascending: false })
