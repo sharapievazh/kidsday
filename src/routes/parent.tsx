@@ -985,23 +985,24 @@ function FamilyPane({
   onDelete: (id: string, name: string) => void;
   onRegenPin: (id: string, name: string) => void;
 }) {
+  const tr = useT();
   return (
     <div className="mt-4">
       <div className="mb-3 flex items-center justify-between">
         <h2 className="text-sm font-extrabold uppercase tracking-widest text-muted-foreground">
-          Family ({kids.length})
+          {tr("familyCount")(kids.length)}
         </h2>
         <button
           onClick={onAdd}
           className="flex items-center gap-1 rounded-full bg-primary px-3 py-2 text-sm font-extrabold text-primary-foreground btn-chunky active:btn-chunky-press"
         >
-          <UserPlus className="h-4 w-4" /> Add child
+          <UserPlus className="h-4 w-4" /> {tr("addChild")}
         </button>
       </div>
 
       {kids.length === 0 && (
         <p className="rounded-2xl border-2 border-dashed border-border p-6 text-center text-sm text-muted-foreground">
-          No children yet. Tap "Add child" to create their profile and PIN.
+          {tr("noChildren")}
         </p>
       )}
 
@@ -1057,15 +1058,16 @@ function ReviewPane({
   kidById: Record<string, import("@/lib/app-store").Profile>;
   onDispute: (id: string) => void;
 }) {
+  const tr = useT();
   return (
     <div className="mt-4 space-y-2">
       <h2 className="mb-1 text-xs font-extrabold uppercase tracking-widest text-muted-foreground">
-        Recent completions
+        {tr("recentCompletions")}
       </h2>
-      {loading && <p className="text-sm text-muted-foreground">Loading…</p>}
+      {loading && <p className="text-sm text-muted-foreground">{tr("loading")}</p>}
       {!loading && items.length === 0 && (
         <p className="rounded-2xl border-2 border-dashed border-border p-6 text-center text-sm text-muted-foreground">
-          No completions yet. They'll appear here in real-time. ⚡
+          {tr("noCompletionsYet")}
         </p>
       )}
       {items.map((it) => {
@@ -1098,7 +1100,7 @@ function ReviewPane({
               onClick={() => onDispute(it.id)}
               className="rounded-full bg-destructive/10 px-3 py-1.5 text-xs font-extrabold text-destructive"
             >
-              Dispute
+              {tr("dispute")}
             </button>
           </div>
         );
