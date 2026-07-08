@@ -310,6 +310,18 @@ function ParentPage() {
                     {k.name}
                   </button>
                 ))}
+                {parentId && (
+                  <button
+                    onClick={() => setFilter(parentId)}
+                    className={`rounded-full px-3 py-1 text-xs font-extrabold ${
+                      filter === parentId
+                        ? "bg-primary text-primary-foreground"
+                        : "text-muted-foreground"
+                    }`}
+                  >
+                    {profileQ.data?.emoji ?? "👤"} {tr("myself")}
+                  </button>
+                )}
               </div>
               <button
                 onClick={openCreate}
