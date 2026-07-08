@@ -36,9 +36,11 @@ import {
   type Reward,
   type ScheduleType,
   type Task,
+  localizedTaskTitle,
+  localizedRewardName,
 } from "@/lib/app-store";
 import { TopBar } from "@/components/RoleSwitcher";
-import { useT } from "@/lib/i18n";
+import { useLang, useT } from "@/lib/i18n";
 
 
 export const Route = createFileRoute("/parent")({
@@ -66,6 +68,7 @@ type FormState = {
 
 function ParentPage() {
   const tr = useT();
+  const { lang } = useLang();
   const { session } = useSession();
   const profileQ = useParentProfile(!!session);
   const parentId = profileQ.data?.id;
@@ -308,7 +311,7 @@ function ParentPage() {
                       {CATEGORY_EMOJI[t.category]}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <div className="truncate font-bold">{t.title}</div>
+                      <div className="truncate font-bold">{localizedTaskTitle(t, lang)}</div>
                       <div className="mt-0.5 flex flex-wrap items-center gap-1 text-[11px] font-bold">
                         <span
                           className="rounded-full px-1.5 py-0.5 text-white"
@@ -386,7 +389,7 @@ function ParentPage() {
                     {r.emoji ?? "🎁"}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <div className="truncate font-bold">{r.name}</div>
+                    <div className="truncate font-bold">{localizedRewardName(r, lang)}</div>
                     <div className="text-xs font-bold text-coin">🪙 {r.cost}</div>
                   </div>
                   <button
@@ -445,7 +448,7 @@ function ParentPage() {
                 >
                   <div className="min-w-0">
                     <div className="truncate font-bold">
-                      {p.reward?.emoji ?? "🎁"} {p.reward?.name ?? "Reward"}
+                      {p.reward?.emoji ?? "🎁"} {p.reward ? localizedRewardName(p.reward, lang) : "Reward"}
                     </div>
                     <div className="text-xs text-muted-foreground">
                       {k?.emoji ?? "🙂"} {k?.name ?? "?"} · 🪙 {p.cost} ·{" "}
@@ -480,7 +483,7 @@ function ParentPage() {
                   >
                     <div className="min-w-0">
                       <div className="truncate font-bold">
-                        {p.reward?.emoji ?? "🎁"} {p.reward?.name ?? "Reward"}
+                        {p.reward?.emoji ?? "🎁"} {p.reward ? localizedRewardName(p.reward, lang) : "Reward"}
                       </div>
                       <div className="text-xs text-muted-foreground">
                         {k?.emoji ?? "🙂"} {k?.name ?? "?"} · {p.created_at.slice(0, 10)}
