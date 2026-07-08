@@ -85,7 +85,7 @@ function ParentPage() {
   const parentId = profileQ.data?.id;
   const kidsQ = useKids(parentId);
   const tasksQ = useTasks(parentId);
-  const kids = kidsQ.data ?? [];
+  const kids = useMemo(() => kidsQ.data ?? [], [kidsQ.data]);
   const kidIds = useMemo(() => kids.map((k) => k.id), [kids]);
   const completionsQ = useAllCompletions(kidIds);
   const purchasesQ = usePurchases(kidIds);
