@@ -55,6 +55,7 @@ type ParentTab = "tasks" | "family" | "review" | "approvals";
 
 type FormState = {
   title: string;
+  title_ru: string;
   category: Category;
   assignee_id: string;
   coins: number;
