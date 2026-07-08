@@ -18,6 +18,8 @@ import {
   useTasks,
   useTodayCompletions,
   localizedRewardName,
+  isMoneyReward,
+  rewardRubles,
 } from "@/lib/app-store";
 import { ProgressRing } from "@/components/ProgressRing";
 import { TaskItem } from "@/components/TaskItem";
