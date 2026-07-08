@@ -325,7 +325,7 @@ export function usePurchases(kidIds: string[]) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("reward_purchases")
-        .select("*, reward:rewards(name, emoji)")
+        .select("*, reward:rewards(name, name_ru, emoji)")
         .in("kid_id", kidIds)
         .order("created_at", { ascending: false });
       if (error) throw error;
