@@ -654,7 +654,9 @@ export function useFamilyCompletionsRealtime(kidIds: string[]) {
             const kid = kids.find((k) => k.id === row.kid_id);
             const task = tasks.find((t) => t.id === row.task_id);
             const kidLabel = kid ? `${kid.emoji ?? "🙂"} ${kid.name}` : "Kid";
-            const taskLabel = task ? `${CATEGORY_EMOJI[task.category]} ${task.title}` : "a quest";
+            const lang = (typeof window !== "undefined" && (localStorage.getItem("kidsday.lang") as "en" | "ru" | null)) || "en";
+            const title = task ? localizedTaskTitle(task, lang) : "a quest";
+            const taskLabel = task ? `${CATEGORY_EMOJI[task.category]} ${title}` : "a quest";
             toast.success(`${kidLabel} completed ${taskLabel}`, {
               description: `🪙 +${row.coins_awarded ?? task?.coins ?? 0}`,
             });
