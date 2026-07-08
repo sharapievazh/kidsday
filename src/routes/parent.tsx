@@ -6,7 +6,7 @@ import { Pencil, Plus, Trash2, X, UserPlus, RefreshCw, KeyRound, Gift } from "lu
 import {
   CATEGORIES,
   CATEGORY_EMOJI,
-  SCHEDULE_LABEL,
+  
   WEEKDAYS,
   categoryToken,
   coinsFor,
