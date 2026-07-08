@@ -894,13 +894,23 @@ function ParentPage() {
             </div>
 
             <label className="block">
-              <span className="text-xs font-bold text-muted-foreground">{tr("rewardName")}</span>
+              <span className="text-xs font-bold text-muted-foreground">{tr("rewardName")} (EN)</span>
               <input
                 value={rewardForm.name}
                 onChange={(e) => setRewardForm({ ...rewardForm, name: e.target.value })}
                 placeholder="e.g. Ice cream trip"
                 className="mt-1 w-full rounded-xl border-2 border-border bg-background px-3 py-2 font-bold outline-none focus:border-primary"
                 autoFocus
+              />
+            </label>
+
+            <label className="mt-3 block">
+              <span className="text-xs font-bold text-muted-foreground">{tr("rewardName")} (RU)</span>
+              <input
+                value={rewardForm.name_ru}
+                onChange={(e) => setRewardForm({ ...rewardForm, name_ru: e.target.value })}
+                placeholder="напр. Пойти за мороженым"
+                className="mt-1 w-full rounded-xl border-2 border-border bg-background px-3 py-2 font-bold outline-none focus:border-primary"
               />
             </label>
 
