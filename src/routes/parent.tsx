@@ -55,6 +55,17 @@ export const Route = createFileRoute("/parent")({
 
 type ParentTab = "tasks" | "family" | "review" | "approvals";
 
+const TASK_PLACEHOLDERS: Record<Category, { en: string; ru: string }> = {
+  Hygiene: { en: "e.g. Brush teeth", ru: "напр. Почистить зубы" },
+  Chores: { en: "e.g. Tidy up the room", ru: "напр. Убраться в комнате" },
+  "Self-Education": { en: "e.g. Logic puzzle", ru: "напр. Упражнение на логику" },
+  Reading: { en: "e.g. Read 20 pages", ru: "напр. Прочитать 20 страниц" },
+  Piano: { en: "e.g. Piano practice", ru: "напр. Игра на пианино" },
+  Chess: { en: "e.g. Chess puzzle", ru: "напр. Шахматная задача" },
+  Sports: { en: "e.g. Morning workout", ru: "напр. Утренняя зарядка" },
+  Creative: { en: "e.g. Draw a picture", ru: "напр. Нарисовать рисунок" },
+};
+
 type FormState = {
   title: string;
   title_ru: string;
@@ -167,12 +178,19 @@ function ParentPage() {
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.title.trim()) return toast.error("Title required");
+    const en = form.title.trim();
+    const ru = form.title_ru.trim();
+    if (!en && !ru) return toast.error(tr("titleRequired"));
     if (!form.assignee_id) return toast.error("Pick an assignee");
     if (form.days_of_week.length === 0) return toast.error("Pick at least one day");
+    const payload = {
+      ...form,
+      title: en || ru,
+      title_ru: ru || null,
+    };
     if (editing) {
       updateTask.mutate(
-        { id: editing.id, patch: form },
+        { id: editing.id, patch: payload },
         {
           onSuccess: () => {
             toast.success("Quest updated");
@@ -182,7 +200,7 @@ function ParentPage() {
         },
       );
     } else {
-      addTask.mutate(form, {
+      addTask.mutate(payload, {
         onSuccess: () => {
           toast.success("Quest created");
           close();
@@ -566,7 +584,7 @@ function ParentPage() {
               <input
                 value={form.title}
                 onChange={(e) => setForm({ ...form, title: e.target.value })}
-                placeholder="e.g. Brush teeth"
+                placeholder={TASK_PLACEHOLDERS[form.category].en}
                 className="mt-1 w-full rounded-xl border-2 border-border bg-background px-3 py-2 font-bold outline-none focus:border-primary"
                 autoFocus
               />
@@ -577,7 +595,7 @@ function ParentPage() {
               <input
                 value={form.title_ru}
                 onChange={(e) => setForm({ ...form, title_ru: e.target.value })}
-                placeholder="напр. Почистить зубы"
+                placeholder={TASK_PLACEHOLDERS[form.category].ru}
                 className="mt-1 w-full rounded-xl border-2 border-border bg-background px-3 py-2 font-bold outline-none focus:border-primary"
               />
             </label>
@@ -864,8 +882,11 @@ function ParentPage() {
             onClick={(e) => e.stopPropagation()}
             onSubmit={(e) => {
               e.preventDefault();
-              if (!rewardForm.name.trim()) return toast.error("Name required");
+              const en = rewardForm.name.trim();
+              const ru = rewardForm.name_ru.trim();
+              if (!en && !ru) return toast.error(tr("nameRequired"));
               if (rewardForm.cost < 1) return toast.error("Cost must be > 0");
+              const payload = { ...rewardForm, name: en || ru, name_ru: ru || null };
               const onDone = () => {
                 toast.success(editingReward ? "Reward updated" : "Reward added");
                 setRewardModal(false);
@@ -874,11 +895,11 @@ function ParentPage() {
                 toast.error(err instanceof Error ? err.message : "Failed");
               if (editingReward) {
                 updateReward.mutate(
-                  { id: editingReward.id, patch: rewardForm },
+                  { id: editingReward.id, patch: payload },
                   { onSuccess: onDone, onError: onErr },
                 );
               } else {
-                addReward.mutate(rewardForm, { onSuccess: onDone, onError: onErr });
+                addReward.mutate(payload, { onSuccess: onDone, onError: onErr });
               }
             }}
             className="w-full max-w-md rounded-t-3xl bg-card p-5 shadow-2xl sm:rounded-3xl"
