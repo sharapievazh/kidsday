@@ -114,6 +114,7 @@ export type Task = {
   parent_id: string;
   assignee_id: string;
   title: string;
+  title_ru: string | null;
   category: Category;
   coins: number;
   frequency: Frequency;
@@ -133,6 +134,7 @@ export type Reward = {
   id: string;
   parent_id: string;
   name: string;
+  name_ru: string | null;
   emoji: string | null;
   cost: number;
   active: boolean;
@@ -146,7 +148,7 @@ export type Purchase = {
   delivered: boolean;
   delivered_at: string | null;
   created_at: string;
-  reward?: { name: string; emoji: string | null } | null;
+  reward?: { name: string; name_ru: string | null; emoji: string | null } | null;
 };
 
 const today = () => new Date().toISOString().slice(0, 10);
@@ -323,7 +325,7 @@ export function usePurchases(kidIds: string[]) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("reward_purchases")
-        .select("*, reward:rewards(name, emoji)")
+        .select("*, reward:rewards(name, name_ru, emoji)")
         .in("kid_id", kidIds)
         .order("created_at", { ascending: false });
       if (error) throw error;
@@ -467,27 +469,72 @@ export function coinsFor(
 // ============== SEED INITIAL DATA ==============
 
 const INITIAL_TASKS_TEMPLATE: Array<Omit<Task, "id" | "parent_id" | "assignee_id">> = [
-  { title: "Early wake-up (6–7 AM)", category: "Hygiene", coins: 10, frequency: "daily", days_of_week: [1,2,3,4,5,6,7], schedule_type: "always" },
-  { title: "Workout or morning exercise", category: "Sports", coins: 10, frequency: "daily", days_of_week: [1,2,3,4,5,6,7], schedule_type: "always" },
-  { title: "Book notes / summary of today's reading", category: "Reading", coins: 15, frequency: "daily", days_of_week: [1,2,3,4,5,6,7], schedule_type: "always" },
-  { title: "Home responsibility (chore around the house)", category: "Chores", coins: 10, frequency: "daily", days_of_week: [1,2,3,4,5,6,7], schedule_type: "always" },
-  { title: "Creative project (make something by hand)", category: "Creative", coins: 15, frequency: "daily", days_of_week: [1,2,3,4,5,6,7], schedule_type: "always" },
-  { title: "Brush teeth (morning)", category: "Hygiene", coins: 5, frequency: "daily", days_of_week: [1,2,3,4,5,6,7], schedule_type: "always" },
-  { title: "Make the bed", category: "Chores", coins: 5, frequency: "daily", days_of_week: [1,2,3,4,5,6,7], schedule_type: "always" },
-  { title: "Piano practice", category: "Piano", coins: 15, frequency: "daily", days_of_week: [1,2,3,4,5], schedule_type: "school_days" },
-  { title: "Chess puzzle", category: "Chess", coins: 10, frequency: "daily", days_of_week: [1,2,3,4,5,6,7], schedule_type: "always" },
+  { title: "Early wake-up (6–7 AM)", title_ru: "Ранний подъём (6–7 утра)", category: "Hygiene", coins: 10, frequency: "daily", days_of_week: [1,2,3,4,5,6,7], schedule_type: "always" },
+  { title: "Workout or morning exercise", title_ru: "Тренировка или зарядка", category: "Sports", coins: 10, frequency: "daily", days_of_week: [1,2,3,4,5,6,7], schedule_type: "always" },
+  { title: "Book notes / summary of today's reading", title_ru: "Конспект прочитанного за день", category: "Reading", coins: 15, frequency: "daily", days_of_week: [1,2,3,4,5,6,7], schedule_type: "always" },
+  { title: "Home responsibility (chore around the house)", title_ru: "Домашняя обязанность", category: "Chores", coins: 10, frequency: "daily", days_of_week: [1,2,3,4,5,6,7], schedule_type: "always" },
+  { title: "Creative project (make something by hand)", title_ru: "Творческий проект своими руками", category: "Creative", coins: 15, frequency: "daily", days_of_week: [1,2,3,4,5,6,7], schedule_type: "always" },
+  { title: "Brush teeth (morning)", title_ru: "Почистить зубы (утро)", category: "Hygiene", coins: 5, frequency: "daily", days_of_week: [1,2,3,4,5,6,7], schedule_type: "always" },
+  { title: "Make the bed", title_ru: "Заправить кровать", category: "Chores", coins: 5, frequency: "daily", days_of_week: [1,2,3,4,5,6,7], schedule_type: "always" },
+  { title: "Piano practice", title_ru: "Занятия на пианино", category: "Piano", coins: 15, frequency: "daily", days_of_week: [1,2,3,4,5], schedule_type: "school_days" },
+  { title: "Chess puzzle", title_ru: "Шахматная задача", category: "Chess", coins: 10, frequency: "daily", days_of_week: [1,2,3,4,5,6,7], schedule_type: "always" },
 ];
 
 
 const INITIAL_REWARDS = [
-  { name: "30 min extra screen time", emoji: "📱", cost: 50 },
-  { name: "Choose dinner", emoji: "🍕", cost: 75 },
-  { name: "Ice cream trip", emoji: "🍦", cost: 100 },
-  { name: "Movie night pick", emoji: "🎬", cost: 120 },
-  { name: "Stay up 30 min late", emoji: "🌙", cost: 80 },
-  { name: "New small toy", emoji: "🧸", cost: 250 },
-  { name: "Trip to the park", emoji: "🛝", cost: 60 },
+  { name: "30 min extra screen time", name_ru: "30 мин экранного времени", emoji: "📱", cost: 50 },
+  { name: "Choose dinner", name_ru: "Выбрать ужин", emoji: "🍕", cost: 75 },
+  { name: "Ice cream trip", name_ru: "Пойти за мороженым", emoji: "🍦", cost: 100 },
+  { name: "Movie night pick", name_ru: "Выбрать фильм на вечер", emoji: "🎬", cost: 120 },
+  { name: "Stay up 30 min late", name_ru: "Лечь на 30 мин позже", emoji: "🌙", cost: 80 },
+  { name: "New small toy", name_ru: "Новая маленькая игрушка", emoji: "🧸", cost: 250 },
+  { name: "Trip to the park", name_ru: "Прогулка в парк", emoji: "🛝", cost: 60 },
 ];
+
+// Fallback translations for common seed titles/names, applied when a row
+// has no explicit *_ru value (e.g. rows seeded before the RU column existed).
+const TITLE_RU_FALLBACK: Record<string, string> = {
+  "Brush Teeth": "Почистить зубы",
+  "Brush teeth (morning)": "Почистить зубы (утро)",
+  "Book": "Книга",
+  "Dancing": "Танцы",
+  "bed, table and dish": "Кровать, стол и посуда",
+  "Homework": "Домашнее задание",
+  "Make the bed": "Заправить кровать",
+  "Piano practice": "Занятия на пианино",
+  "Chess puzzle": "Шахматная задача",
+  "Early wake-up (6–7 AM)": "Ранний подъём (6–7 утра)",
+  "Workout or morning exercise": "Тренировка или зарядка",
+  "Book notes / summary of today's reading": "Конспект прочитанного за день",
+  "Home responsibility (chore around the house)": "Домашняя обязанность",
+  "Creative project (make something by hand)": "Творческий проект своими руками",
+};
+
+const REWARD_RU_FALLBACK: Record<string, string> = {
+  "30 min extra screen time": "30 мин экранного времени",
+  "Choose dinner": "Выбрать ужин",
+  "Ice cream trip": "Пойти за мороженым",
+  "Movie night pick": "Выбрать фильм на вечер",
+  "Stay up 30 min late": "Лечь на 30 мин позже",
+  "New small toy": "Новая маленькая игрушка",
+  "Trip to the park": "Прогулка в парк",
+};
+
+export function localizedTaskTitle(
+  task: Pick<Task, "title" | "title_ru">,
+  lang: "en" | "ru",
+): string {
+  if (lang !== "ru") return task.title;
+  return task.title_ru?.trim() || TITLE_RU_FALLBACK[task.title] || task.title;
+}
+
+export function localizedRewardName(
+  reward: Pick<Reward, "name" | "name_ru">,
+  lang: "en" | "ru",
+): string {
+  if (lang !== "ru") return reward.name;
+  return reward.name_ru?.trim() || REWARD_RU_FALLBACK[reward.name] || reward.name;
+}
 
 // Seeds starter rewards + (when kids already exist) starter tasks. Kids are
 // added through Family Management so they get PIN-based auth accounts.
@@ -607,7 +654,9 @@ export function useFamilyCompletionsRealtime(kidIds: string[]) {
             const kid = kids.find((k) => k.id === row.kid_id);
             const task = tasks.find((t) => t.id === row.task_id);
             const kidLabel = kid ? `${kid.emoji ?? "🙂"} ${kid.name}` : "Kid";
-            const taskLabel = task ? `${CATEGORY_EMOJI[task.category]} ${task.title}` : "a quest";
+            const lang = (typeof window !== "undefined" && (localStorage.getItem("kidsday.lang") as "en" | "ru" | null)) || "en";
+            const title = task ? localizedTaskTitle(task, lang) : "a quest";
+            const taskLabel = task ? `${CATEGORY_EMOJI[task.category]} ${title}` : "a quest";
             toast.success(`${kidLabel} completed ${taskLabel}`, {
               description: `🪙 +${row.coins_awarded ?? task?.coins ?? 0}`,
             });
@@ -631,7 +680,7 @@ export type ReviewItem = {
   completed_on: string;
   created_at: string;
   coins_awarded: number;
-  task: { title: string; category: Category } | null;
+  task: { title: string; title_ru: string | null; category: Category } | null;
 };
 
 export function useReviewFeed(kidIds: string[]) {
@@ -642,7 +691,7 @@ export function useReviewFeed(kidIds: string[]) {
       const { data, error } = await supabase
         .from("task_completions")
         .select(
-          "id, task_id, kid_id, completed_on, created_at, coins_awarded, task:tasks(title,category)",
+          "id, task_id, kid_id, completed_on, created_at, coins_awarded, task:tasks(title,title_ru,category)",
         )
         .in("kid_id", kidIds)
         .order("created_at", { ascending: false })
@@ -673,11 +722,12 @@ export function useDisputeCompletion() {
 export function useAddReward(parentId: string | undefined) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (r: { name: string; emoji: string; cost: number; active?: boolean }) => {
+    mutationFn: async (r: { name: string; name_ru?: string | null; emoji: string; cost: number; active?: boolean }) => {
       if (!parentId) throw new Error("No parent");
       const { error } = await supabase.from("rewards").insert({
         parent_id: parentId,
         name: r.name,
+        name_ru: r.name_ru?.trim() || null,
         emoji: r.emoji,
         cost: r.cost,
         active: r.active ?? true,

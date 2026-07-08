@@ -36,9 +36,11 @@ import {
   type Reward,
   type ScheduleType,
   type Task,
+  localizedTaskTitle,
+  localizedRewardName,
 } from "@/lib/app-store";
 import { TopBar } from "@/components/RoleSwitcher";
-import { useT } from "@/lib/i18n";
+import { useLang, useT } from "@/lib/i18n";
 
 
 export const Route = createFileRoute("/parent")({
@@ -55,6 +57,7 @@ type ParentTab = "tasks" | "family" | "review" | "approvals";
 
 type FormState = {
   title: string;
+  title_ru: string;
   category: Category;
   assignee_id: string;
   coins: number;
@@ -65,6 +68,7 @@ type FormState = {
 
 function ParentPage() {
   const tr = useT();
+  const { lang } = useLang();
   const { session } = useSession();
   const profileQ = useParentProfile(!!session);
   const parentId = profileQ.data?.id;
@@ -102,7 +106,7 @@ function ParentPage() {
   const [filter, setFilter] = useState<string>("all");
   const [editingReward, setEditingReward] = useState<Reward | null>(null);
   const [rewardModal, setRewardModal] = useState(false);
-  const [rewardForm, setRewardForm] = useState({ name: "", emoji: "🎁", cost: 50, active: true });
+  const [rewardForm, setRewardForm] = useState({ name: "", name_ru: "", emoji: "🎁", cost: 50, active: true });
 
 
   // Track last-seen review count to badge new completions
@@ -126,6 +130,7 @@ function ParentPage() {
   const defaultAssignee = kids[0]?.id ?? "";
   const blank: FormState = {
     title: "",
+    title_ru: "",
     category: "Hygiene",
     assignee_id: defaultAssignee,
     coins: 5,
@@ -144,6 +149,7 @@ function ParentPage() {
   const openEdit = (t: Task) => {
     setForm({
       title: t.title,
+      title_ru: t.title_ru ?? "",
       category: t.category,
       assignee_id: t.assignee_id,
       coins: t.coins,
@@ -305,7 +311,7 @@ function ParentPage() {
                       {CATEGORY_EMOJI[t.category]}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <div className="truncate font-bold">{t.title}</div>
+                      <div className="truncate font-bold">{localizedTaskTitle(t, lang)}</div>
                       <div className="mt-0.5 flex flex-wrap items-center gap-1 text-[11px] font-bold">
                         <span
                           className="rounded-full px-1.5 py-0.5 text-white"
@@ -359,7 +365,7 @@ function ParentPage() {
               <button
                 onClick={() => {
                   setEditingReward(null);
-                  setRewardForm({ name: "", emoji: "🎁", cost: 50, active: true });
+                  setRewardForm({ name: "", name_ru: "", emoji: "🎁", cost: 50, active: true });
                   setRewardModal(true);
                 }}
                 className="flex items-center gap-1 rounded-full bg-primary px-3 py-1.5 text-xs font-extrabold text-primary-foreground btn-chunky active:btn-chunky-press"
@@ -383,7 +389,7 @@ function ParentPage() {
                     {r.emoji ?? "🎁"}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <div className="truncate font-bold">{r.name}</div>
+                    <div className="truncate font-bold">{localizedRewardName(r, lang)}</div>
                     <div className="text-xs font-bold text-coin">🪙 {r.cost}</div>
                   </div>
                   <button
@@ -391,6 +397,7 @@ function ParentPage() {
                       setEditingReward(r);
                       setRewardForm({
                         name: r.name,
+                        name_ru: r.name_ru ?? "",
                         emoji: r.emoji ?? "🎁",
                         cost: r.cost,
                         active: r.active,
@@ -441,7 +448,7 @@ function ParentPage() {
                 >
                   <div className="min-w-0">
                     <div className="truncate font-bold">
-                      {p.reward?.emoji ?? "🎁"} {p.reward?.name ?? "Reward"}
+                      {p.reward?.emoji ?? "🎁"} {p.reward ? localizedRewardName(p.reward, lang) : "Reward"}
                     </div>
                     <div className="text-xs text-muted-foreground">
                       {k?.emoji ?? "🙂"} {k?.name ?? "?"} · 🪙 {p.cost} ·{" "}
@@ -476,7 +483,7 @@ function ParentPage() {
                   >
                     <div className="min-w-0">
                       <div className="truncate font-bold">
-                        {p.reward?.emoji ?? "🎁"} {p.reward?.name ?? "Reward"}
+                        {p.reward?.emoji ?? "🎁"} {p.reward ? localizedRewardName(p.reward, lang) : "Reward"}
                       </div>
                       <div className="text-xs text-muted-foreground">
                         {k?.emoji ?? "🙂"} {k?.name ?? "?"} · {p.created_at.slice(0, 10)}
@@ -555,13 +562,23 @@ function ParentPage() {
             </div>
 
             <label className="block">
-              <span className="text-xs font-bold text-muted-foreground">{tr("title")}</span>
+              <span className="text-xs font-bold text-muted-foreground">{tr("title")} (EN)</span>
               <input
                 value={form.title}
                 onChange={(e) => setForm({ ...form, title: e.target.value })}
                 placeholder="e.g. Brush teeth"
                 className="mt-1 w-full rounded-xl border-2 border-border bg-background px-3 py-2 font-bold outline-none focus:border-primary"
                 autoFocus
+              />
+            </label>
+
+            <label className="mt-3 block">
+              <span className="text-xs font-bold text-muted-foreground">{tr("title")} (RU)</span>
+              <input
+                value={form.title_ru}
+                onChange={(e) => setForm({ ...form, title_ru: e.target.value })}
+                placeholder="напр. Почистить зубы"
+                className="mt-1 w-full rounded-xl border-2 border-border bg-background px-3 py-2 font-bold outline-none focus:border-primary"
               />
             </label>
 
@@ -880,13 +897,23 @@ function ParentPage() {
             </div>
 
             <label className="block">
-              <span className="text-xs font-bold text-muted-foreground">{tr("rewardName")}</span>
+              <span className="text-xs font-bold text-muted-foreground">{tr("rewardName")} (EN)</span>
               <input
                 value={rewardForm.name}
                 onChange={(e) => setRewardForm({ ...rewardForm, name: e.target.value })}
                 placeholder="e.g. Ice cream trip"
                 className="mt-1 w-full rounded-xl border-2 border-border bg-background px-3 py-2 font-bold outline-none focus:border-primary"
                 autoFocus
+              />
+            </label>
+
+            <label className="mt-3 block">
+              <span className="text-xs font-bold text-muted-foreground">{tr("rewardName")} (RU)</span>
+              <input
+                value={rewardForm.name_ru}
+                onChange={(e) => setRewardForm({ ...rewardForm, name_ru: e.target.value })}
+                placeholder="напр. Пойти за мороженым"
+                className="mt-1 w-full rounded-xl border-2 border-border bg-background px-3 py-2 font-bold outline-none focus:border-primary"
               />
             </label>
 
@@ -1059,6 +1086,7 @@ function ReviewPane({
   onDispute: (id: string) => void;
 }) {
   const tr = useT();
+  const { lang } = useLang();
   return (
     <div className="mt-4 space-y-2">
       <h2 className="mb-1 text-xs font-extrabold uppercase tracking-widest text-muted-foreground">
@@ -1090,7 +1118,7 @@ function ReviewPane({
               {cat ? CATEGORY_EMOJI[cat] : "✅"}
             </div>
             <div className="min-w-0 flex-1">
-              <div className="truncate font-bold">{it.task?.title ?? "Deleted quest"}</div>
+              <div className="truncate font-bold">{it.task ? localizedTaskTitle(it.task, lang) : "Deleted quest"}</div>
               <div className="mt-0.5 text-xs text-muted-foreground">
                 {k?.emoji ?? "🙂"} {k?.name ?? "?"} · 🪙 {it.coins_awarded} ·{" "}
                 {new Date(it.created_at).toLocaleString()}

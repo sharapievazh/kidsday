@@ -4,9 +4,11 @@ import { Check } from "lucide-react";
 import {
   categoryToken,
   CATEGORY_EMOJI,
+  localizedTaskTitle,
   type Task,
   useToggleTask,
 } from "@/lib/app-store";
+import { useLang, useT } from "@/lib/i18n";
 
 export function TaskItem({
   task,
@@ -18,6 +20,8 @@ export function TaskItem({
   done: boolean;
 }) {
   const toggle = useToggleTask();
+  const { lang } = useLang();
+  const tr = useT();
   const [floating, setFloating] = useState<number | null>(null);
   const token = categoryToken(task.category);
 
@@ -61,14 +65,14 @@ export function TaskItem({
         <div
           className={`truncate font-bold ${done ? "text-muted-foreground line-through" : "text-foreground"}`}
         >
-          {task.title}
+          {localizedTaskTitle(task, lang)}
         </div>
         <div className="mt-0.5 flex items-center gap-2 text-xs">
           <span
             className="rounded-full px-2 py-0.5 font-bold text-white"
             style={{ backgroundColor: `var(--${token})` }}
           >
-            {task.category}
+            {tr(`cat_${task.category}`)}
           </span>
           <span className="flex items-center gap-1 font-bold text-coin">🪙 +{task.coins}</span>
         </div>
