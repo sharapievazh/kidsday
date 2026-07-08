@@ -194,13 +194,13 @@ function ParentPage() {
 
   return (
     <div>
-      <TopBar title={t("parent")} />
+      <TopBar title={tr("parent")} />
       <div className="px-4 pt-4">
         <div className="rounded-3xl bg-gradient-to-br from-primary to-success p-5 text-primary-foreground shadow">
           <div className="text-xs font-bold uppercase tracking-widest opacity-80">
-            {t("welcomeBack")}
+            {tr("welcomeBack")}
           </div>
-          <h1 className="mt-1 text-2xl font-extrabold">{t("parentDashboard")}</h1>
+          <h1 className="mt-1 text-2xl font-extrabold">{tr("parentDashboard")}</h1>
           <div className="mt-3 grid grid-cols-2 gap-3">
             {loading ? (
               <>
@@ -226,10 +226,10 @@ function ParentPage() {
         <div className="mt-4 grid grid-cols-4 gap-1 rounded-full bg-muted p-1">
           {(
             [
-              { id: "tasks", label: t("tabTasks"), badge: 0 },
-              { id: "family", label: t("tabFamily"), badge: 0 },
-              { id: "review", label: t("tabReview"), badge: newReviewCount },
-              { id: "approvals", label: t("tabRewards"), badge: pending.length },
+              { id: "tasks", label: tr("tabTasks"), badge: 0 },
+              { id: "family", label: tr("tabFamily"), badge: 0 },
+              { id: "review", label: tr("tabReview"), badge: newReviewCount },
+              { id: "approvals", label: tr("tabRewards"), badge: pending.length },
             ] as { id: ParentTab; label: string; badge: number }[]
           ).map((tab_) => (
             <button
