@@ -185,7 +185,8 @@ function KidPage() {
           ) : (
             <div className="grid grid-cols-2 gap-3">
               {(rewardsQ.data ?? []).map((r) => {
-                const can = coins >= r.cost;
+                const money = isMoneyReward(r);
+                const can = money ? coins > 0 : coins >= r.cost;
                 return (
                   <button
                     key={r.id}
@@ -208,7 +209,7 @@ function KidPage() {
                           : "bg-muted text-muted-foreground"
                       }`}
                     >
-                      🪙 {r.cost}
+                      🪙 {money ? tr("allCoins") : r.cost}
                     </div>
                   </button>
                 );
