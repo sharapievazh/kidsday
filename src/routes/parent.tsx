@@ -178,12 +178,19 @@ function ParentPage() {
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.title.trim()) return toast.error("Title required");
+    const en = form.title.trim();
+    const ru = form.title_ru.trim();
+    if (!en && !ru) return toast.error(tr("titleRequired"));
     if (!form.assignee_id) return toast.error("Pick an assignee");
     if (form.days_of_week.length === 0) return toast.error("Pick at least one day");
+    const payload = {
+      ...form,
+      title: en || ru,
+      title_ru: ru || null,
+    };
     if (editing) {
       updateTask.mutate(
-        { id: editing.id, patch: form },
+        { id: editing.id, patch: payload },
         {
           onSuccess: () => {
             toast.success("Quest updated");
@@ -193,7 +200,7 @@ function ParentPage() {
         },
       );
     } else {
-      addTask.mutate(form, {
+      addTask.mutate(payload, {
         onSuccess: () => {
           toast.success("Quest created");
           close();
