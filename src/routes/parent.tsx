@@ -924,7 +924,7 @@ function ParentPage() {
               const en = rewardForm.name.trim();
               const ru = rewardForm.name_ru.trim();
               if (!en && !ru) return toast.error(tr("nameRequired"));
-              if (rewardForm.cost < 1) return toast.error("Cost must be > 0");
+              if (rewardForm.cost < 0) return toast.error("Cost must be ≥ 0");
               const payload = { ...rewardForm, name: en || ru, name_ru: ru || null };
               const onDone = () => {
                 toast.success(editingReward ? "Reward updated" : "Reward added");
