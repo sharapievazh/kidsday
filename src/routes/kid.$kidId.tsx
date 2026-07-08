@@ -201,7 +201,7 @@ function KidPage() {
                           : "bg-muted text-muted-foreground"
                       }`}
                     >
-                      🪙 {r.cost}
+                      {isMoneyReward(r) ? `${rewardRubles(r)} ₽ · 🪙 ${r.cost}` : `🪙 ${r.cost}`}
                     </div>
                   </button>
                 );
