@@ -417,16 +417,23 @@ export function useDeleteTask() {
 export function useBuyReward() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (vars: { reward: Reward; kidId: string }) => {
+    mutationFn: async (vars: { reward: Reward; kidId: string; costOverride?: number }) => {
+      const cost = vars.costOverride ?? vars.reward.cost;
       const { error } = await supabase.from("reward_purchases").insert({
         reward_id: vars.reward.id,
         kid_id: vars.kidId,
-        cost: vars.reward.cost,
+        cost,
       });
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["purchases"] }),
   });
+}
+
+// A reward with cost === 0 is treated as a "money exchange": the child
+// spends ALL current coins in one go, no currency attached.
+export function isMoneyReward(r: Pick<Reward, "cost">): boolean {
+  return r.cost === 0;
 }
 
 export function useMarkDelivered() {
