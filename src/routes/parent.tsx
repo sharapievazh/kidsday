@@ -233,16 +233,16 @@ function ParentPage() {
             ] as { id: ParentTab; label: string; badge: number }[]
           ).map((tab_) => (
             <button
-              key={t.id}
-              onClick={() => setTab(t.id)}
+              key={tab_.id}
+              onClick={() => setTab(tab_.id)}
               className={`relative rounded-full py-2 text-xs font-extrabold ${
-                tab === t.id ? "bg-card shadow-sm" : "text-muted-foreground"
+                tab === tab_.id ? "bg-card shadow-sm" : "text-muted-foreground"
               }`}
             >
-              {t.label}
-              {t.badge > 0 && (
+              {tab_.label}
+              {tab_.badge > 0 && (
                 <span className="absolute -right-0.5 -top-0.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-extrabold text-destructive-foreground shadow">
-                  {t.badge > 99 ? "99+" : t.badge}
+                  {tab_.badge > 99 ? "99+" : tab_.badge}
                 </span>
               )}
             </button>
