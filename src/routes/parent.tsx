@@ -37,6 +37,11 @@ import {
   type Task,
   localizedTaskTitle,
   localizedRewardName,
+  rewardDisplayLabel,
+  isMoneyReward,
+  rewardRubles,
+  MONEY_EMOJI,
+  COINS_PER_RUBLE,
 } from "@/lib/app-store";
 import { TopBar } from "@/components/RoleSwitcher";
 import { useLang, useT } from "@/lib/i18n";
