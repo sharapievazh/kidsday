@@ -17,11 +17,12 @@ import {
   useSession,
   useTasks,
   useTodayCompletions,
+  localizedRewardName,
 } from "@/lib/app-store";
 import { ProgressRing } from "@/components/ProgressRing";
 import { TaskItem } from "@/components/TaskItem";
 import { TopBar } from "@/components/RoleSwitcher";
-import { useT } from "@/lib/i18n";
+import { useLang, useT } from "@/lib/i18n";
 
 export const Route = createFileRoute("/kid/$kidId")({
   head: () => ({
@@ -35,6 +36,7 @@ export const Route = createFileRoute("/kid/$kidId")({
 
 function KidPage() {
   const tr = useT();
+  const { lang } = useLang();
   const { kidId } = Route.useParams();
   const { session } = useSession();
   const profileQ = useParentProfile(!!session);
@@ -82,7 +84,7 @@ function KidPage() {
       {
         onSuccess: () => {
           confetti({ particleCount: 120, spread: 90, origin: { y: 0.6 } });
-          toast.success(`${tr("rewardUnlocked")}: ${r.emoji ?? "🎁"} ${r.name}`);
+          toast.success(`${tr("rewardUnlocked")}: ${r.emoji ?? "🎁"} ${localizedRewardName(r, lang)}`);
         },
         onError: (e) => toast.error(e instanceof Error ? e.message : "Could not buy"),
       },
@@ -183,7 +185,7 @@ function KidPage() {
                     }`}
                   >
                     <div className="text-4xl">{r.emoji ?? "🎁"}</div>
-                    <div className="mt-2 text-sm font-extrabold leading-tight">{r.name}</div>
+                    <div className="mt-2 text-sm font-extrabold leading-tight">{localizedRewardName(r, lang)}</div>
                     <div
                       className={`mt-2 rounded-full px-3 py-1 text-xs font-extrabold ${
                         can ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
@@ -210,7 +212,7 @@ function KidPage() {
                 className="flex items-center justify-between rounded-xl border border-border bg-card px-3 py-2"
               >
                 <div className="text-sm font-bold">
-                  {p.reward?.emoji ?? "🎁"} {p.reward?.name ?? "Reward"}
+                  {p.reward?.emoji ?? "🎁"} {p.reward ? localizedRewardName(p.reward, lang) : "Reward"}
                 </div>
                 <span
                   className={`rounded-full px-2 py-0.5 text-xs font-extrabold ${
