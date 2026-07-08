@@ -5,13 +5,13 @@ import { useKids, useParentProfile, useSession } from "@/lib/app-store";
 import { supabase } from "@/integrations/supabase/client";
 import { LanguageToggle, useT } from "@/lib/i18n";
 
-
 export function RoleSwitcher() {
   const { session } = useSession();
   const profileQ = useParentProfile(!!session);
   const kidsQ = useKids(profileQ.data?.id);
   const location = useLocation();
   const navigate = useNavigate();
+  const t = useT();
 
   if (!session || location.pathname === "/auth") return null;
 
@@ -29,7 +29,9 @@ export function RoleSwitcher() {
               key={k.id}
               onClick={() => navigate({ to: "/kid/$kidId", params: { kidId: k.id } })}
               className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-bold transition-all ${
-                active ? "bg-primary text-primary-foreground scale-105" : "text-muted-foreground hover:bg-muted"
+                active
+                  ? "bg-primary text-primary-foreground scale-105"
+                  : "text-muted-foreground hover:bg-muted"
               }`}
               aria-current={active ? "page" : undefined}
               data-href={to}
@@ -48,20 +50,14 @@ export function RoleSwitcher() {
           }`}
         >
           <span className="text-base">👤</span>
-          <span>{useT()("parent")}</span>
+          <span>{t("parent")}</span>
         </button>
       </div>
     </div>
   );
 }
 
-export function TopBar({
-  title,
-  rightSlot,
-}: {
-  title: string;
-  rightSlot?: React.ReactNode;
-}) {
+export function TopBar({ title, rightSlot }: { title: string; rightSlot?: React.ReactNode }) {
   return (
     <header className="sticky top-0 z-30 flex items-center justify-between border-b border-border bg-card/90 px-4 py-3 backdrop-blur">
       <Link to="/" className="text-lg font-extrabold tracking-tight">

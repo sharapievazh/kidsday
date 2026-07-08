@@ -250,7 +250,8 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   const [lang, setLangState] = useState<Lang>("en");
 
   useEffect(() => {
-    const saved = (typeof window !== "undefined" && localStorage.getItem("kidsday.lang")) as Lang | null;
+    const saved = (typeof window !== "undefined" &&
+      localStorage.getItem("kidsday.lang")) as Lang | null;
     if (saved === "en" || saved === "ru") {
       setLangState(saved);
       return;

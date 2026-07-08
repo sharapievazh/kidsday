@@ -38,7 +38,11 @@ function Index() {
         <LanguageToggle />
       </div>
       <div className="mt-2 text-center">
-        <img src="/favicon.png" alt="Kids Day" className="mx-auto h-20 w-20 rounded-2xl shadow-lg" />
+        <img
+          src="/favicon.png"
+          alt="Kids Day"
+          className="mx-auto h-20 w-20 rounded-2xl shadow-lg"
+        />
         <h1 className="mt-3 text-3xl font-extrabold">Kids Day</h1>
         <p className="mt-1 text-sm text-muted-foreground">{t("dailyQuestsTagline")}</p>
       </div>
@@ -92,9 +96,7 @@ function Index() {
           </div>
           <div className="flex-1">
             <div className="text-lg font-extrabold">{t("parent")}</div>
-            <div className="text-sm font-bold text-muted-foreground">
-              {t("manageTasksApprove")}
-            </div>
+            <div className="text-sm font-bold text-muted-foreground">{t("manageTasksApprove")}</div>
           </div>
           <div className="text-2xl">→</div>
         </Link>
@@ -102,7 +104,6 @@ function Index() {
     </div>
   );
 }
-
 
 function SkeletonCard() {
   return (

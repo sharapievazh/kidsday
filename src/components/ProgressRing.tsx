@@ -40,9 +40,7 @@ export function ProgressRing({
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <div className="text-4xl font-extrabold text-foreground">
-          {Math.round(pct * 100)}%
-        </div>
+        <div className="text-4xl font-extrabold text-foreground">{Math.round(pct * 100)}%</div>
         <div className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
           {label ?? `${value}/${total}`}
         </div>

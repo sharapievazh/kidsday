@@ -6,7 +6,6 @@ import { Pencil, Plus, Trash2, X, UserPlus, RefreshCw, KeyRound, Gift } from "lu
 import {
   CATEGORIES,
   CATEGORY_EMOJI,
-  
   WEEKDAYS,
   categoryToken,
   coinsFor,
@@ -41,7 +40,6 @@ import {
 } from "@/lib/app-store";
 import { TopBar } from "@/components/RoleSwitcher";
 import { useLang, useT } from "@/lib/i18n";
-
 
 export const Route = createFileRoute("/parent")({
   head: () => ({
@@ -110,15 +108,19 @@ function ParentPage() {
   const purchases = purchasesQ.data ?? [];
   const rewards = rewardsQ.data ?? [];
 
-
   const [tab, setTab] = useState<ParentTab>("tasks");
   const [editing, setEditing] = useState<Task | null>(null);
   const [creating, setCreating] = useState(false);
   const [filter, setFilter] = useState<string>("all");
   const [editingReward, setEditingReward] = useState<Reward | null>(null);
   const [rewardModal, setRewardModal] = useState(false);
-  const [rewardForm, setRewardForm] = useState({ name: "", name_ru: "", emoji: "🎁", cost: 50, active: true });
-
+  const [rewardForm, setRewardForm] = useState({
+    name: "",
+    name_ru: "",
+    emoji: "🎁",
+    cost: 50,
+    active: true,
+  });
 
   // Track last-seen review count to badge new completions
   const [seenReviewCount, setSeenReviewCount] = useState(0);
@@ -152,7 +154,8 @@ function ParentPage() {
   const [form, setForm] = useState<FormState>(blank);
 
   const openCreate = () => {
-    const preferred = filter !== "all" && kids.some((k) => k.id === filter) ? filter : defaultAssignee;
+    const preferred =
+      filter !== "all" && kids.some((k) => k.id === filter) ? filter : defaultAssignee;
     setForm({ ...blank, assignee_id: preferred });
     setEditing(null);
     setCreating(true);
@@ -215,7 +218,6 @@ function ParentPage() {
   const loading = profileQ.isLoading || kidsQ.isLoading || tasksQ.isLoading;
   const kidById = Object.fromEntries(kids.map((k) => [k.id, k] as const));
 
-
   return (
     <div>
       <TopBar title={tr("parent")} />
@@ -274,7 +276,6 @@ function ParentPage() {
         </div>
 
         {tab === "tasks" ? (
-
           <div className="mt-4">
             <div className="mb-3 flex items-center justify-between gap-2">
               <div className="flex gap-1 rounded-full border border-border bg-card p-1">
@@ -340,7 +341,9 @@ function ParentPage() {
                         <span className="rounded-full bg-muted px-1.5 py-0.5">
                           {assignee?.emoji ?? "🙂"} {assignee?.name ?? "?"}
                         </span>
-                        <span className="rounded-full bg-muted px-1.5 py-0.5">{tr(t.frequency)}</span>
+                        <span className="rounded-full bg-muted px-1.5 py-0.5">
+                          {tr(t.frequency)}
+                        </span>
                         <span className="text-coin">🪙 {t.coins}</span>
                       </div>
                     </div>
@@ -432,8 +435,7 @@ function ParentPage() {
                       if (!confirm(`Delete "${r.name}"?`)) return;
                       deleteReward.mutate(r.id, {
                         onSuccess: () => toast.success("Reward deleted"),
-                        onError: (e) =>
-                          toast.error(e instanceof Error ? e.message : "Failed"),
+                        onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
                       });
                     }}
                     className="rounded-lg p-2 text-destructive hover:bg-destructive/10"
@@ -466,7 +468,8 @@ function ParentPage() {
                 >
                   <div className="min-w-0">
                     <div className="truncate font-bold">
-                      {p.reward?.emoji ?? "🎁"} {p.reward ? localizedRewardName(p.reward, lang) : "Reward"}
+                      {p.reward?.emoji ?? "🎁"}{" "}
+                      {p.reward ? localizedRewardName(p.reward, lang) : "Reward"}
                     </div>
                     <div className="text-xs text-muted-foreground">
                       {k?.emoji ?? "🙂"} {k?.name ?? "?"} · 🪙 {p.cost} ·{" "}
@@ -501,7 +504,8 @@ function ParentPage() {
                   >
                     <div className="min-w-0">
                       <div className="truncate font-bold">
-                        {p.reward?.emoji ?? "🎁"} {p.reward ? localizedRewardName(p.reward, lang) : "Reward"}
+                        {p.reward?.emoji ?? "🎁"}{" "}
+                        {p.reward ? localizedRewardName(p.reward, lang) : "Reward"}
                       </div>
                       <div className="text-xs text-muted-foreground">
                         {k?.emoji ?? "🙂"} {k?.name ?? "?"} · {p.created_at.slice(0, 10)}
@@ -736,7 +740,6 @@ function ParentPage() {
               </div>
             </label>
 
-
             <div className="mt-5 flex gap-2">
               {editing && (
                 <button
@@ -836,9 +839,7 @@ function ParentPage() {
             </label>
 
             <label className="mt-3 block">
-              <span className="text-xs font-bold text-muted-foreground">
-                {tr("sixDigitPin")}
-              </span>
+              <span className="text-xs font-bold text-muted-foreground">{tr("sixDigitPin")}</span>
               <div className="mt-1 flex gap-2">
                 <input
                   value={newKid.pin}
@@ -857,9 +858,7 @@ function ParentPage() {
                   <RefreshCw className="h-4 w-4" />
                 </button>
               </div>
-              <p className="mt-1 text-xs text-muted-foreground">
-                {tr("sharePinHint")}
-              </p>
+              <p className="mt-1 text-xs text-muted-foreground">{tr("sharePinHint")}</p>
             </label>
 
             <button
@@ -918,7 +917,9 @@ function ParentPage() {
             </div>
 
             <label className="block">
-              <span className="text-xs font-bold text-muted-foreground">{tr("rewardName")} (EN)</span>
+              <span className="text-xs font-bold text-muted-foreground">
+                {tr("rewardName")} (EN)
+              </span>
               <input
                 value={rewardForm.name}
                 onChange={(e) => setRewardForm({ ...rewardForm, name: e.target.value })}
@@ -929,7 +930,9 @@ function ParentPage() {
             </label>
 
             <label className="mt-3 block">
-              <span className="text-xs font-bold text-muted-foreground">{tr("rewardName")} (RU)</span>
+              <span className="text-xs font-bold text-muted-foreground">
+                {tr("rewardName")} (RU)
+              </span>
               <input
                 value={rewardForm.name_ru}
                 onChange={(e) => setRewardForm({ ...rewardForm, name_ru: e.target.value })}
@@ -1015,7 +1018,6 @@ function ParentPage() {
           </form>
         </div>
       )}
-
     </div>
   );
 }
@@ -1139,7 +1141,9 @@ function ReviewPane({
               {cat ? CATEGORY_EMOJI[cat] : "✅"}
             </div>
             <div className="min-w-0 flex-1">
-              <div className="truncate font-bold">{it.task ? localizedTaskTitle(it.task, lang) : "Deleted quest"}</div>
+              <div className="truncate font-bold">
+                {it.task ? localizedTaskTitle(it.task, lang) : "Deleted quest"}
+              </div>
               <div className="mt-0.5 text-xs text-muted-foreground">
                 {k?.emoji ?? "🙂"} {k?.name ?? "?"} · 🪙 {it.coins_awarded} ·{" "}
                 {new Date(it.created_at).toLocaleString()}
@@ -1157,4 +1161,3 @@ function ReviewPane({
     </div>
   );
 }
-
