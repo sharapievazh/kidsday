@@ -216,7 +216,15 @@ function ParentPage() {
   const filtered = tasks.filter((t) => filter === "all" || t.assignee_id === filter);
   const pending = purchases.filter((p) => !p.delivered);
   const loading = profileQ.isLoading || kidsQ.isLoading || tasksQ.isLoading;
-  const kidById = Object.fromEntries(kids.map((k) => [k.id, k] as const));
+  const kidById: Record<string, { name: string; emoji: string | null }> = Object.fromEntries(
+    kids.map((k) => [k.id, { name: k.name, emoji: k.emoji }] as const),
+  );
+  if (profileQ.data) {
+    kidById[profileQ.data.id] = {
+      name: tr("myself"),
+      emoji: profileQ.data.emoji ?? "👤",
+    };
+  }
 
   return (
     <div>
@@ -630,7 +638,7 @@ function ParentPage() {
             <div className="mt-3 grid grid-cols-2 gap-3">
               <label className="block">
                 <span className="text-xs font-bold text-muted-foreground">{tr("assignee")}</span>
-                <div className="mt-1 flex gap-1.5">
+                <div className="mt-1 flex flex-wrap gap-1.5">
                   {kids.map((k) => (
                     <button
                       type="button"
@@ -645,6 +653,19 @@ function ParentPage() {
                       {k.emoji ?? "🙂"} {k.name}
                     </button>
                   ))}
+                  {parentId && (
+                    <button
+                      type="button"
+                      onClick={() => setForm({ ...form, assignee_id: parentId })}
+                      className={`flex-1 rounded-xl py-2 text-xs font-extrabold ${
+                        form.assignee_id === parentId
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-muted text-muted-foreground"
+                      }`}
+                    >
+                      {profileQ.data?.emoji ?? "👤"} {tr("assignToSelf")}
+                    </button>
+                  )}
                 </div>
               </label>
               <label className="block">
@@ -1105,7 +1126,7 @@ function ReviewPane({
 }: {
   items: import("@/lib/app-store").ReviewItem[];
   loading: boolean;
-  kidById: Record<string, import("@/lib/app-store").Profile>;
+  kidById: Record<string, { name: string; emoji: string | null }>;
   onDispute: (id: string) => void;
 }) {
   const tr = useT();

@@ -22,11 +22,12 @@ export const Route = createFileRoute("/")({
 function Index() {
   const { session } = useSession();
   const profileQ = useParentProfile(!!session);
-  const kidsQ = useKids(profileQ.data?.id);
+  const parent = profileQ.data;
+  const kidsQ = useKids(parent?.id);
   const kids = kidsQ.data ?? [];
-  const kidIds = kids.map((k) => k.id);
-  const completionsQ = useAllCompletions(kidIds);
-  const purchasesQ = usePurchases(kidIds);
+  const allIds = [...kids.map((k) => k.id), ...(parent ? [parent.id] : [])];
+  const completionsQ = useAllCompletions(allIds);
+  const purchasesQ = usePurchases(allIds);
   const navigate = useNavigate();
   const t = useT();
 
@@ -86,6 +87,31 @@ function Index() {
               </button>
             );
           })}
+
+        {!loading && parent && (
+          <button
+            onClick={() => navigate({ to: "/kid/$kidId", params: { kidId: parent.id } })}
+            className="flex w-full items-center gap-4 rounded-3xl border-2 border-border bg-card p-4 text-left transition-all hover:-translate-y-0.5 hover:border-primary"
+          >
+            <div
+              className="flex h-16 w-16 items-center justify-center rounded-2xl text-4xl"
+              style={{
+                backgroundColor: `color-mix(in oklab, ${parent.color ?? "var(--primary)"} 20%, white)`,
+              }}
+            >
+              {parent.emoji ?? "👤"}
+            </div>
+            <div className="flex-1">
+              <div className="text-xl font-extrabold">{t("myself")}</div>
+              <div className="text-sm font-bold text-muted-foreground">
+                🔥 {parent.streak_count} {t("dayStreak")} · 🪙{" "}
+                {coinsFor(parent.id, completionsQ.data ?? [], purchasesQ.data ?? [])}
+              </div>
+            </div>
+            <div className="text-2xl">→</div>
+          </button>
+        )}
+
 
         <Link
           to="/parent"
