@@ -431,7 +431,9 @@ function ParentPage() {
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="truncate font-bold">{localizedRewardName(r, lang)}</div>
-                    <div className="text-xs font-bold text-coin">🪙 {r.cost}</div>
+                    <div className="text-xs font-bold text-coin">
+                      🪙 {r.cost === 0 ? tr("allCoins") : r.cost}
+                    </div>
                   </div>
                   <button
                     onClick={() => {
