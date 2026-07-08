@@ -44,6 +44,8 @@
   --color-piano: var(--piano);
   --color-chess: var(--chess);
   --color-sports: var(--sports);
+  --color-creative: var(--creative);
+
 
   --font-display: "Nunito", "Fredoka", system-ui, sans-serif;
 }
@@ -92,6 +94,8 @@
   --piano: oklch(0.7 0.2 340);       /* pink */
   --chess: oklch(0.55 0.06 260);     /* slate */
   --sports: oklch(0.74 0.19 142);    /* green */
+  --creative: oklch(0.78 0.17 65);   /* amber */
+
 }
 
 @layer base {

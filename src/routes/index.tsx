@@ -7,6 +7,7 @@ import {
   usePurchases,
   coinsFor,
 } from "@/lib/app-store";
+import { LanguageToggle, useT } from "@/lib/i18n";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -27,20 +28,24 @@ function Index() {
   const completionsQ = useAllCompletions(kidIds);
   const purchasesQ = usePurchases(kidIds);
   const navigate = useNavigate();
+  const t = useT();
 
   const loading = profileQ.isLoading || kidsQ.isLoading;
 
   return (
-    <div className="px-5 pt-10 pb-10">
-      <div className="text-center">
+    <div className="px-5 pt-6 pb-10">
+      <div className="flex justify-end">
+        <LanguageToggle />
+      </div>
+      <div className="mt-2 text-center">
         <img src="/favicon.png" alt="Kids Day" className="mx-auto h-20 w-20 rounded-2xl shadow-lg" />
         <h1 className="mt-3 text-3xl font-extrabold">Kids Day</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Daily quests, streaks, and rewards.</p>
+        <p className="mt-1 text-sm text-muted-foreground">{t("dailyQuestsTagline")}</p>
       </div>
 
       <div className="mt-8 space-y-3">
         <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
-          Who's playing?
+          {t("whosPlaying")}
         </p>
 
         {loading && (
@@ -70,7 +75,7 @@ function Index() {
                 <div className="flex-1">
                   <div className="text-xl font-extrabold">{k.name}</div>
                   <div className="text-sm font-bold text-muted-foreground">
-                    🔥 {k.streak_count} day streak · 🪙 {coins}
+                    🔥 {k.streak_count} {t("dayStreak")} · 🪙 {coins}
                   </div>
                 </div>
                 <div className="text-2xl">→</div>
@@ -86,9 +91,9 @@ function Index() {
             👤
           </div>
           <div className="flex-1">
-            <div className="text-lg font-extrabold">Parent</div>
+            <div className="text-lg font-extrabold">{t("parent")}</div>
             <div className="text-sm font-bold text-muted-foreground">
-              Manage tasks & approve rewards
+              {t("manageTasksApprove")}
             </div>
           </div>
           <div className="text-2xl">→</div>
@@ -97,6 +102,7 @@ function Index() {
     </div>
   );
 }
+
 
 function SkeletonCard() {
   return (

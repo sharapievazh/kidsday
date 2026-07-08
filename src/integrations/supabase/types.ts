@@ -270,6 +270,7 @@ export type Database = {
         | "Piano"
         | "Chess"
         | "Sports"
+        | "Creative"
       task_frequency: "daily" | "weekly"
     }
     CompositeTypes: {
@@ -408,6 +409,7 @@ export const Constants = {
         "Piano",
         "Chess",
         "Sports",
+        "Creative",
       ],
       task_frequency: ["daily", "weekly"],
     },

@@ -3,6 +3,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import { LogOut } from "lucide-react";
 import { useKids, useParentProfile, useSession } from "@/lib/app-store";
 import { supabase } from "@/integrations/supabase/client";
+import { LanguageToggle, useT } from "@/lib/i18n";
+
 
 export function RoleSwitcher() {
   const { session } = useSession();
@@ -46,7 +48,7 @@ export function RoleSwitcher() {
           }`}
         >
           <span className="text-base">👤</span>
-          <span>Parent</span>
+          <span>{useT()("parent")}</span>
         </button>
       </div>
     </div>
@@ -62,12 +64,16 @@ export function TopBar({
 }) {
   return (
     <header className="sticky top-0 z-30 flex items-center justify-between border-b border-border bg-card/90 px-4 py-3 backdrop-blur">
-      <Link to="/" className="text-xl font-extrabold tracking-tight">
+      <Link to="/" className="text-lg font-extrabold tracking-tight">
         <img src="/favicon.png" alt="" className="inline-block h-6 w-6 rounded-md align-[-4px]" />{" "}
         <span className="text-primary">Kids Day</span>
       </Link>
-      <div className="text-sm font-bold text-muted-foreground">{title}</div>
-      <div className="flex items-center gap-1">{rightSlot}<SignOutButton /></div>
+      <div className="hidden text-sm font-bold text-muted-foreground sm:block">{title}</div>
+      <div className="flex items-center gap-2">
+        <LanguageToggle />
+        {rightSlot}
+        <SignOutButton />
+      </div>
     </header>
   );
 }

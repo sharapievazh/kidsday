@@ -17,7 +17,8 @@ export type Category =
   | "Reading"
   | "Piano"
   | "Chess"
-  | "Sports";
+  | "Sports"
+  | "Creative";
 
 export const CATEGORIES: Category[] = [
   "Hygiene",
@@ -27,6 +28,7 @@ export const CATEGORIES: Category[] = [
   "Piano",
   "Chess",
   "Sports",
+  "Creative",
 ];
 
 export type Frequency = "daily" | "weekly";
@@ -39,6 +41,7 @@ export const CATEGORY_EMOJI: Record<Category, string> = {
   Piano: "🎹",
   Chess: "♟️",
   Sports: "⚽",
+  Creative: "🎨",
 };
 
 export function categoryToken(cat: Category): string {
@@ -50,9 +53,11 @@ export function categoryToken(cat: Category): string {
     Piano: "piano",
     Chess: "chess",
     Sports: "sports",
+    Creative: "creative",
   };
   return map[cat];
 }
+
 
 // ============== TYPES ==============
 
@@ -461,14 +466,17 @@ export function coinsFor(
 // ============== SEED INITIAL DATA ==============
 
 const INITIAL_TASKS_TEMPLATE: Array<Omit<Task, "id" | "parent_id" | "assignee_id">> = [
+  { title: "Early wake-up (6–7 AM)", category: "Hygiene", coins: 10, frequency: "daily", days_of_week: [1,2,3,4,5,6,7], schedule_type: "always" },
+  { title: "Workout or morning exercise", category: "Sports", coins: 10, frequency: "daily", days_of_week: [1,2,3,4,5,6,7], schedule_type: "always" },
+  { title: "Book notes / summary of today's reading", category: "Reading", coins: 15, frequency: "daily", days_of_week: [1,2,3,4,5,6,7], schedule_type: "always" },
+  { title: "Home responsibility (chore around the house)", category: "Chores", coins: 10, frequency: "daily", days_of_week: [1,2,3,4,5,6,7], schedule_type: "always" },
+  { title: "Creative project (make something by hand)", category: "Creative", coins: 15, frequency: "daily", days_of_week: [1,2,3,4,5,6,7], schedule_type: "always" },
   { title: "Brush teeth (morning)", category: "Hygiene", coins: 5, frequency: "daily", days_of_week: [1,2,3,4,5,6,7], schedule_type: "always" },
   { title: "Make the bed", category: "Chores", coins: 5, frequency: "daily", days_of_week: [1,2,3,4,5,6,7], schedule_type: "always" },
-  { title: "Read 20 minutes", category: "Reading", coins: 10, frequency: "daily", days_of_week: [1,2,3,4,5,6,7], schedule_type: "always" },
   { title: "Piano practice", category: "Piano", coins: 15, frequency: "daily", days_of_week: [1,2,3,4,5], schedule_type: "school_days" },
   { title: "Chess puzzle", category: "Chess", coins: 10, frequency: "daily", days_of_week: [1,2,3,4,5,6,7], schedule_type: "always" },
-  { title: "Self-study lesson", category: "Self-Education", coins: 10, frequency: "daily", days_of_week: [1,2,3,4,5], schedule_type: "school_days" },
-  { title: "Outdoor play 30 min", category: "Sports", coins: 10, frequency: "daily", days_of_week: [6,7], schedule_type: "holidays" },
 ];
+
 
 const INITIAL_REWARDS = [
   { name: "30 min extra screen time", emoji: "📱", cost: 50 },
@@ -639,3 +647,45 @@ export function useDisputeCompletion() {
   });
 }
 
+
+// ============== REWARD CRUD ==============
+
+export function useAddReward(parentId: string | undefined) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (r: { name: string; emoji: string; cost: number; active?: boolean }) => {
+      if (!parentId) throw new Error("No parent");
+      const { error } = await supabase.from("rewards").insert({
+        parent_id: parentId,
+        name: r.name,
+        emoji: r.emoji,
+        cost: r.cost,
+        active: r.active ?? true,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["rewards"] }),
+  });
+}
+
+export function useUpdateReward() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (vars: { id: string; patch: Partial<Reward> }) => {
+      const { error } = await supabase.from("rewards").update(vars.patch).eq("id", vars.id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["rewards"] }),
+  });
+}
+
+export function useDeleteReward() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("rewards").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["rewards"] }),
+  });
+}

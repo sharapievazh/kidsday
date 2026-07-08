@@ -1,7 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import { Pencil, Plus, Trash2, X, UserPlus, RefreshCw, KeyRound } from "lucide-react";
+import { Pencil, Plus, Trash2, X, UserPlus, RefreshCw, KeyRound, Gift } from "lucide-react";
+
 import {
   CATEGORIES,
   CATEGORY_EMOJI,
@@ -10,10 +11,12 @@ import {
   categoryToken,
   coinsFor,
   generateRandomPin,
+  useAddReward,
   useAddTask,
   useAllCompletions,
   useCreateKid,
   useDeleteKid,
+  useDeleteReward,
   useDeleteTask,
   useDisputeCompletion,
   useFamilyCompletionsRealtime,
@@ -23,15 +26,19 @@ import {
   usePurchases,
   useRegeneratePin,
   useReviewFeed,
+  useRewards,
   useSession,
   useTasks,
+  useUpdateReward,
   useUpdateTask,
   type Category,
   type Frequency,
+  type Reward,
   type ScheduleType,
   type Task,
 } from "@/lib/app-store";
 import { TopBar } from "@/components/RoleSwitcher";
+
 
 export const Route = createFileRoute("/parent")({
   head: () => ({
@@ -66,6 +73,7 @@ function ParentPage() {
   const completionsQ = useAllCompletions(kidIds);
   const purchasesQ = usePurchases(kidIds);
   const reviewQ = useReviewFeed(kidIds);
+  const rewardsQ = useRewards(parentId);
 
   useFamilyCompletionsRealtime(kidIds);
 
@@ -77,14 +85,23 @@ function ParentPage() {
   const deleteKid = useDeleteKid();
   const regenPin = useRegeneratePin();
   const disputeCompletion = useDisputeCompletion();
+  const addReward = useAddReward(parentId);
+  const updateReward = useUpdateReward();
+  const deleteReward = useDeleteReward();
 
   const tasks = tasksQ.data ?? [];
   const purchases = purchasesQ.data ?? [];
+  const rewards = rewardsQ.data ?? [];
+
 
   const [tab, setTab] = useState<ParentTab>("tasks");
   const [editing, setEditing] = useState<Task | null>(null);
   const [creating, setCreating] = useState(false);
   const [filter, setFilter] = useState<string>("all");
+  const [editingReward, setEditingReward] = useState<Reward | null>(null);
+  const [rewardModal, setRewardModal] = useState(false);
+  const [rewardForm, setRewardForm] = useState({ name: "", emoji: "🎁", cost: 50, active: true });
+
 
   // Track last-seen review count to badge new completions
   const [seenReviewCount, setSeenReviewCount] = useState(0);
@@ -332,9 +349,78 @@ function ParentPage() {
           </div>
         ) : tab === "approvals" ? (
           <div className="mt-4 space-y-2">
-            <h2 className="mb-1 text-xs font-extrabold uppercase tracking-widest text-muted-foreground">
+            <div className="mb-2 flex items-center justify-between">
+              <h2 className="text-xs font-extrabold uppercase tracking-widest text-muted-foreground">
+                Reward Store ({rewards.length})
+              </h2>
+              <button
+                onClick={() => {
+                  setEditingReward(null);
+                  setRewardForm({ name: "", emoji: "🎁", cost: 50, active: true });
+                  setRewardModal(true);
+                }}
+                className="flex items-center gap-1 rounded-full bg-primary px-3 py-1.5 text-xs font-extrabold text-primary-foreground btn-chunky active:btn-chunky-press"
+              >
+                <Plus className="h-3.5 w-3.5" /> New reward
+              </button>
+            </div>
+            {rewardsQ.isLoading && <p className="text-sm text-muted-foreground">Loading…</p>}
+            {!rewardsQ.isLoading && rewards.length === 0 && (
+              <p className="rounded-2xl border-2 border-dashed border-border p-6 text-center text-sm text-muted-foreground">
+                No rewards yet. Add one!
+              </p>
+            )}
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+              {rewards.map((r) => (
+                <div
+                  key={r.id}
+                  className="flex items-center gap-3 rounded-2xl border border-border bg-card px-3 py-2.5"
+                >
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-muted text-2xl">
+                    {r.emoji ?? "🎁"}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate font-bold">{r.name}</div>
+                    <div className="text-xs font-bold text-coin">🪙 {r.cost}</div>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setEditingReward(r);
+                      setRewardForm({
+                        name: r.name,
+                        emoji: r.emoji ?? "🎁",
+                        cost: r.cost,
+                        active: r.active,
+                      });
+                      setRewardModal(true);
+                    }}
+                    className="rounded-lg p-2 text-muted-foreground hover:bg-muted"
+                    aria-label="Edit reward"
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (!confirm(`Delete "${r.name}"?`)) return;
+                      deleteReward.mutate(r.id, {
+                        onSuccess: () => toast.success("Reward deleted"),
+                        onError: (e) =>
+                          toast.error(e instanceof Error ? e.message : "Failed"),
+                      });
+                    }}
+                    className="rounded-lg p-2 text-destructive hover:bg-destructive/10"
+                    aria-label="Delete reward"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            <h2 className="mt-6 mb-1 text-xs font-extrabold uppercase tracking-widest text-muted-foreground">
               Pending ({pending.length})
             </h2>
+
             {purchasesQ.isLoading && (
               <p className="text-sm text-muted-foreground">Loading…</p>
             )}
@@ -748,6 +834,137 @@ function ParentPage() {
           </form>
         </div>
       )}
+
+      {rewardModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 sm:items-center"
+          onClick={() => setRewardModal(false)}
+        >
+          <form
+            onClick={(e) => e.stopPropagation()}
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (!rewardForm.name.trim()) return toast.error("Name required");
+              if (rewardForm.cost < 1) return toast.error("Cost must be > 0");
+              const onDone = () => {
+                toast.success(editingReward ? "Reward updated" : "Reward added");
+                setRewardModal(false);
+              };
+              const onErr = (err: unknown) =>
+                toast.error(err instanceof Error ? err.message : "Failed");
+              if (editingReward) {
+                updateReward.mutate(
+                  { id: editingReward.id, patch: rewardForm },
+                  { onSuccess: onDone, onError: onErr },
+                );
+              } else {
+                addReward.mutate(rewardForm, { onSuccess: onDone, onError: onErr });
+              }
+            }}
+            className="w-full max-w-md rounded-t-3xl bg-card p-5 shadow-2xl sm:rounded-3xl"
+          >
+            <div className="mb-3 flex items-center justify-between">
+              <h3 className="flex items-center gap-2 text-lg font-extrabold">
+                <Gift className="h-5 w-5" /> {editingReward ? "Edit reward" : "New reward"}
+              </h3>
+              <button
+                type="button"
+                onClick={() => setRewardModal(false)}
+                className="rounded-full p-1 hover:bg-muted"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <label className="block">
+              <span className="text-xs font-bold text-muted-foreground">Reward name</span>
+              <input
+                value={rewardForm.name}
+                onChange={(e) => setRewardForm({ ...rewardForm, name: e.target.value })}
+                placeholder="e.g. Ice cream trip"
+                className="mt-1 w-full rounded-xl border-2 border-border bg-background px-3 py-2 font-bold outline-none focus:border-primary"
+                autoFocus
+              />
+            </label>
+
+            <label className="mt-3 block">
+              <span className="text-xs font-bold text-muted-foreground">Emoji</span>
+              <div className="mt-1 flex flex-wrap gap-1.5">
+                {["🎁", "🍦", "🍕", "📱", "🎬", "🌙", "🧸", "🛝", "🎮", "🍭", "🎨", "⚽"].map(
+                  (e) => (
+                    <button
+                      type="button"
+                      key={e}
+                      onClick={() => setRewardForm({ ...rewardForm, emoji: e })}
+                      className={`h-10 w-10 rounded-xl text-xl ${
+                        rewardForm.emoji === e ? "bg-primary/20 ring-2 ring-primary" : "bg-muted"
+                      }`}
+                    >
+                      {e}
+                    </button>
+                  ),
+                )}
+              </div>
+            </label>
+
+            <label className="mt-3 block">
+              <span className="text-xs font-bold text-muted-foreground">
+                Cost (coins): <span className="text-coin">🪙 {rewardForm.cost}</span>
+              </span>
+              <input
+                type="range"
+                min={5}
+                max={500}
+                step={5}
+                value={rewardForm.cost}
+                onChange={(e) => setRewardForm({ ...rewardForm, cost: Number(e.target.value) })}
+                className="mt-2 w-full accent-[color:var(--color-primary)]"
+              />
+            </label>
+
+            <label className="mt-3 flex items-center gap-2 text-sm font-bold">
+              <input
+                type="checkbox"
+                checked={rewardForm.active}
+                onChange={(e) => setRewardForm({ ...rewardForm, active: e.target.checked })}
+              />
+              Active (visible in the kid store)
+            </label>
+
+            <div className="mt-5 flex gap-2">
+              {editingReward && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!confirm("Delete this reward?")) return;
+                    deleteReward.mutate(editingReward.id, {
+                      onSuccess: () => {
+                        toast.success("Reward deleted");
+                        setRewardModal(false);
+                      },
+                    });
+                  }}
+                  className="rounded-full bg-destructive/10 px-4 py-2.5 text-sm font-extrabold text-destructive"
+                >
+                  Delete
+                </button>
+              )}
+              <button
+                type="submit"
+                disabled={addReward.isPending || updateReward.isPending}
+                className="flex-1 rounded-full bg-primary py-3 font-extrabold text-primary-foreground btn-chunky active:btn-chunky-press disabled:opacity-50"
+              >
+                {addReward.isPending || updateReward.isPending
+                  ? "Saving…"
+                  : editingReward
+                    ? "Save changes"
+                    : "Add reward"}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
     </div>
   );
 }

@@ -12,6 +12,8 @@ import { Toaster } from "sonner";
 import appCss from "../styles.css?url";
 import { RoleSwitcher } from "@/components/RoleSwitcher";
 import { AppGate } from "@/components/AppGate";
+import { LanguageProvider } from "@/lib/i18n";
+
 
 function NotFoundComponent() {
   return (
@@ -102,13 +104,16 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   return (
     <QueryClientProvider client={queryClient}>
-      <AppGate>
-        <div className="mx-auto min-h-screen max-w-md pb-24">
-          <Outlet />
-        </div>
-        <RoleSwitcher />
-        <Toaster position="top-center" richColors />
-      </AppGate>
+      <LanguageProvider>
+        <AppGate>
+          <div className="mx-auto min-h-screen max-w-md pb-24">
+            <Outlet />
+          </div>
+          <RoleSwitcher />
+          <Toaster position="top-center" richColors />
+        </AppGate>
+      </LanguageProvider>
     </QueryClientProvider>
   );
 }
+
