@@ -594,6 +594,25 @@ export function localizedRewardName(
   return reward.name_ru?.trim() || REWARD_RU_FALLBACK[reward.name] || reward.name;
 }
 
+// ============== MONEY REWARDS ==============
+// Fixed exchange rate: 1 ruble = 2 coins. Money rewards are marked by emoji "💵".
+export const MONEY_EMOJI = "💵";
+export const COINS_PER_RUBLE = 2;
+export function isMoneyReward(reward: Pick<Reward, "emoji">): boolean {
+  return reward.emoji === MONEY_EMOJI;
+}
+export function rewardRubles(reward: Pick<Reward, "cost">): number {
+  return Math.round(reward.cost / COINS_PER_RUBLE);
+}
+export function rewardDisplayLabel(
+  reward: Pick<Reward, "name" | "name_ru" | "emoji" | "cost">,
+  lang: "en" | "ru",
+): string {
+  const base = localizedRewardName(reward, lang);
+  if (!isMoneyReward(reward)) return base;
+  return `${rewardRubles(reward)} ₽ (${reward.cost} ${lang === "ru" ? "монет" : "coins"})`;
+}
+
 // Seeds starter rewards + (when kids already exist) starter tasks. Kids are
 // added through Family Management so they get PIN-based auth accounts.
 export function useSeedFamilyIfEmpty(parent: Profile | null | undefined) {
