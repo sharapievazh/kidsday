@@ -21,6 +21,7 @@ import {
 import { ProgressRing } from "@/components/ProgressRing";
 import { TaskItem } from "@/components/TaskItem";
 import { TopBar } from "@/components/RoleSwitcher";
+import { useT } from "@/lib/i18n";
 
 export const Route = createFileRoute("/kid/$kidId")({
   head: () => ({
@@ -33,6 +34,7 @@ export const Route = createFileRoute("/kid/$kidId")({
 });
 
 function KidPage() {
+  const tr = useT();
   const { kidId } = Route.useParams();
   const { session } = useSession();
   const profileQ = useParentProfile(!!session);
@@ -72,7 +74,7 @@ function KidPage() {
     const r = (rewardsQ.data ?? []).find((x) => x.id === rewardId);
     if (!r) return;
     if (coins < r.cost) {
-      toast.error(`Need ${r.cost - coins} more coins!`);
+      toast.error(tr("needMoreCoins")(r.cost - coins));
       return;
     }
     buy.mutate(
@@ -80,7 +82,7 @@ function KidPage() {
       {
         onSuccess: () => {
           confetti({ particleCount: 120, spread: 90, origin: { y: 0.6 } });
-          toast.success(`Reward unlocked: ${r.emoji ?? "🎁"} ${r.name}`);
+          toast.success(`${tr("rewardUnlocked")}: ${r.emoji ?? "🎁"} ${r.name}`);
         },
         onError: (e) => toast.error(e instanceof Error ? e.message : "Could not buy"),
       },
@@ -96,23 +98,23 @@ function KidPage() {
             onClick={() => navigate({ to: "/" })}
             className="rounded-full bg-muted px-3 py-1.5 text-xs font-bold"
           >
-            Switch
+            {tr("switch")}
           </button>
         }
       />
 
       <div className="flex items-center justify-between gap-2 px-4 pt-4">
-        <Stat icon="🔥" value={streak} label="streak" color="var(--streak)" />
+        <Stat icon="🔥" value={streak} label={tr("streak")} color="var(--streak)" />
         <div className="text-3xl">{kid.emoji ?? "🙂"}</div>
-        <Stat icon="🪙" value={coins} label="coins" color="var(--coin)" />
+        <Stat icon="🪙" value={coins} label={tr("coins")} color="var(--coin)" />
       </div>
 
       <div className="flex flex-col items-center px-4 pt-4">
-        <ProgressRing value={done} total={allTasks.length} label={`${done}/${allTasks.length} done`} />
+        <ProgressRing value={done} total={allTasks.length} label={`${done}/${allTasks.length}`} />
         <p className="mt-3 text-center text-sm font-bold text-muted-foreground">
           {done === allTasks.length && allTasks.length > 0
-            ? "🎉 All quests complete! Amazing!"
-            : `Keep going, ${kid.name}! ${allTasks.length - done} quests left today.`}
+            ? tr("allDone")
+            : tr("keepGoing")(kid.name, allTasks.length - done)}
         </p>
       </div>
 
@@ -125,7 +127,7 @@ function KidPage() {
               tab === t ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
             }`}
           >
-            {t === "tasks" ? "🎯 Quests" : "🎁 Rewards"}
+            {t === "tasks" ? tr("questsTab") : tr("rewardsTab")}
           </button>
         ))}
       </div>
@@ -142,7 +144,7 @@ function KidPage() {
                     style={{ backgroundColor: `var(--${token})` }}
                   />
                   <h2 className="text-xs font-extrabold uppercase tracking-widest text-muted-foreground">
-                    {CATEGORY_EMOJI[cat]} {cat}
+                    {CATEGORY_EMOJI[cat]} {tr(`cat_${cat}`)}
                   </h2>
                 </div>
                 <div className="space-y-2">
@@ -154,19 +156,19 @@ function KidPage() {
             );
           })}
           {grouped.length === 0 && (
-            <EmptyState emoji="✨" title="No quests yet" hint="Ask a parent to add quests for you." />
+            <EmptyState emoji="✨" title={tr("noQuests")} hint={tr("noQuestsHint")} />
           )}
         </div>
       ) : (
         <div className="px-4 pt-4">
           <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-lg font-extrabold">Reward Store</h2>
+            <h2 className="text-lg font-extrabold">{tr("rewardStore")}</h2>
             <span className="rounded-full bg-coin/20 px-3 py-1 text-sm font-extrabold text-foreground">
               🪙 {coins}
             </span>
           </div>
           {rewardsQ.isLoading ? (
-            <p className="text-sm text-muted-foreground">Loading rewards…</p>
+            <p className="text-sm text-muted-foreground">{tr("loading")}</p>
           ) : (
             <div className="grid grid-cols-2 gap-3">
               {(rewardsQ.data ?? []).map((r) => {
@@ -196,11 +198,11 @@ function KidPage() {
           )}
 
           <h3 className="mt-6 mb-2 text-sm font-extrabold uppercase tracking-widest text-muted-foreground">
-            My purchases
+            {tr("myPurchases")}
           </h3>
           <div className="space-y-2">
             {(purchasesQ.data ?? []).length === 0 && (
-              <p className="text-sm text-muted-foreground">Nothing yet — start saving!</p>
+              <p className="text-sm text-muted-foreground">{tr("nothingYet")}</p>
             )}
             {(purchasesQ.data ?? []).map((p) => (
               <div
@@ -215,7 +217,7 @@ function KidPage() {
                     p.delivered ? "bg-success/20 text-success" : "bg-streak/20 text-streak"
                   }`}
                 >
-                  {p.delivered ? "Delivered" : "Pending"}
+                  {p.delivered ? tr("delivered") : tr("pending")}
                 </span>
               </div>
             ))}
@@ -225,7 +227,7 @@ function KidPage() {
 
       <div className="mt-8 text-center">
         <Link to="/" className="text-xs font-bold text-muted-foreground underline">
-          ← Back to profiles
+          {tr("backToProfiles")}
         </Link>
       </div>
     </div>
@@ -272,7 +274,7 @@ function LoadingScreen() {
   return (
     <div className="flex min-h-[60vh] flex-col items-center justify-center gap-3 text-center">
       <img src="/favicon.png" alt="" className="h-12 w-12 animate-pulse rounded-2xl" />
-      <p className="text-sm font-bold text-muted-foreground">Loading quests…</p>
+      <p className="text-sm font-bold text-muted-foreground">Loading…</p>
     </div>
   );
 }
