@@ -882,8 +882,11 @@ function ParentPage() {
             onClick={(e) => e.stopPropagation()}
             onSubmit={(e) => {
               e.preventDefault();
-              if (!rewardForm.name.trim()) return toast.error("Name required");
+              const en = rewardForm.name.trim();
+              const ru = rewardForm.name_ru.trim();
+              if (!en && !ru) return toast.error(tr("nameRequired"));
               if (rewardForm.cost < 1) return toast.error("Cost must be > 0");
+              const payload = { ...rewardForm, name: en || ru, name_ru: ru || null };
               const onDone = () => {
                 toast.success(editingReward ? "Reward updated" : "Reward added");
                 setRewardModal(false);
@@ -892,11 +895,11 @@ function ParentPage() {
                 toast.error(err instanceof Error ? err.message : "Failed");
               if (editingReward) {
                 updateReward.mutate(
-                  { id: editingReward.id, patch: rewardForm },
+                  { id: editingReward.id, patch: payload },
                   { onSuccess: onDone, onError: onErr },
                 );
               } else {
-                addReward.mutate(rewardForm, { onSuccess: onDone, onError: onErr });
+                addReward.mutate(payload, { onSuccess: onDone, onError: onErr });
               }
             }}
             className="w-full max-w-md rounded-t-3xl bg-card p-5 shadow-2xl sm:rounded-3xl"
