@@ -136,7 +136,8 @@ function ParentPage() {
   const [form, setForm] = useState<FormState>(blank);
 
   const openCreate = () => {
-    setForm({ ...blank, assignee_id: defaultAssignee });
+    const preferred = filter !== "all" && kids.some((k) => k.id === filter) ? filter : defaultAssignee;
+    setForm({ ...blank, assignee_id: preferred });
     setEditing(null);
     setCreating(true);
   };
