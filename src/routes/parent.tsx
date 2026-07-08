@@ -41,6 +41,79 @@ import {
 import { TopBar } from "@/components/RoleSwitcher";
 import { useLang, useT } from "@/lib/i18n";
 
+const KID_EMOJIS = Array.from(
+  new Set([
+    "🌸", "🦊", "🐻", "🐯", "🐼", "🦄", "🐶", "🐱", "🦁", "🐵",
+    "🐧", "🐸", "🐨", "🐰", "🐷", "🐮", "🐔", "🐙", "🦋", "🐝",
+    "🐢", "🦖", "🦥", "🦩", "🦉", "🐳", "🐬", "🦈", "🐲",
+    "🌟", "🌈", "🍀", "🌻", "🌵", "🍄", "🌊", "🔥", "❄️",
+    "🎈", "🎨", "🚀", "⚽", "🎮", "🧸", "👑",
+    "🧙", "🧚", "🦸", "🥷", "👽", "🤖", "😺",
+  ]),
+);
+
+const REWARD_EMOJIS = Array.from(
+  new Set([
+    "🎁", "💵", "💰", "🍦", "🍕", "🎮", "🎬", "📱", "🧸", "🍭",
+    "🎨", "⚽", "💸", "🤑", "🏆", "🥇", "🎯", "🎟️",
+    "🎪", "🎢", "🎡", "🎠", "🎳", "🚴", "🛼", "🛹", "🏓",
+    "🎾", "🏀", "🏈", "⚾", "🏐", "🎸", "🎹", "🥁", "🎤", "🎧",
+    "📚", "✏️", "🖍️", "🧩", "🪁", "🪀", "🎲", "♟️", "🎰", "🃏",
+    "🍔", "🍟", "🌭", "🍿", "🍩", "🍪", "🎂", "🍰", "🧁", "🍫",
+    "🍬", "🍡", "🍨", "🍧", "🍇", "🍓", "🍎", "🍌", "🍉", "🥑",
+    "🚲", "🛴", "🏕️", "🏖️", "🎆", "🎇", "🌠", "🌙", "🛝",
+  ]),
+);
+
+function EmojiPicker({
+  value,
+  onChange,
+  options,
+  initialCount = 12,
+}: {
+  value: string;
+  onChange: (e: string) => void;
+  options: string[];
+  initialCount?: number;
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const { t } = useT();
+  // Ensure the selected emoji is always visible in the collapsed view.
+  const base = options.slice(0, initialCount);
+  if (!base.includes(value) && options.includes(value)) {
+    base[base.length - 1] = value;
+  }
+  const shown = expanded ? options : base;
+  const canExpand = options.length > initialCount;
+  return (
+    <div className="mt-1">
+      <div className="flex flex-wrap gap-1.5">
+        {shown.map((e) => (
+          <button
+            type="button"
+            key={e}
+            onClick={() => onChange(e)}
+            className={`h-10 w-10 rounded-xl text-xl ${
+              value === e ? "bg-primary/20 ring-2 ring-primary" : "bg-muted"
+            }`}
+          >
+            {e}
+          </button>
+        ))}
+        {canExpand && (
+          <button
+            type="button"
+            onClick={() => setExpanded((v) => !v)}
+            className="h-10 rounded-xl bg-muted px-3 text-xs font-extrabold text-muted-foreground"
+          >
+            {expanded ? t("showLess") : `${t("showMore")} +${options.length - initialCount}`}
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export const Route = createFileRoute("/parent")({
   head: () => ({
     meta: [
