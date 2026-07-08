@@ -16,6 +16,7 @@ export function RoleSwitcher() {
   if (!session || location.pathname === "/auth") return null;
 
   const kids = kidsQ.data ?? [];
+  const parent = profileQ.data;
   const isActive = (path: string) => location.pathname === path;
 
   return (
@@ -41,6 +42,20 @@ export function RoleSwitcher() {
             </button>
           );
         })}
+        {parent && (
+          <button
+            onClick={() => navigate({ to: "/kid/$kidId", params: { kidId: parent.id } })}
+            className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-bold transition-all ${
+              location.pathname.startsWith(`/kid/${parent.id}`)
+                ? "bg-primary text-primary-foreground scale-105"
+                : "text-muted-foreground hover:bg-muted"
+            }`}
+            aria-current={location.pathname.startsWith(`/kid/${parent.id}`) ? "page" : undefined}
+          >
+            <span className="text-base">{parent.emoji ?? "👤"}</span>
+            <span>{t("myself")}</span>
+          </button>
+        )}
         <button
           onClick={() => navigate({ to: "/parent" })}
           className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-bold transition-all ${
