@@ -37,6 +37,10 @@ import {
   type Task,
   localizedTaskTitle,
   localizedRewardName,
+  isMoneyReward,
+  rewardRubles,
+  MONEY_EMOJI,
+  COINS_PER_RUBLE,
 } from "@/lib/app-store";
 import { TopBar } from "@/components/RoleSwitcher";
 import { useLang, useT } from "@/lib/i18n";
@@ -431,7 +435,11 @@ function ParentPage() {
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="truncate font-bold">{localizedRewardName(r, lang)}</div>
-                    <div className="text-xs font-bold text-coin">🪙 {r.cost}</div>
+                    <div className="text-xs font-bold text-coin">
+                      {isMoneyReward(r)
+                        ? `💵 ${rewardRubles(r)} ₽ (🪙 ${r.cost})`
+                        : `🪙 ${r.cost}`}
+                    </div>
                   </div>
                   <button
                     onClick={() => {
@@ -974,40 +982,102 @@ function ParentPage() {
               />
             </label>
 
-            <label className="mt-3 block">
-              <span className="text-xs font-bold text-muted-foreground">{tr("rewardEmoji")}</span>
-              <div className="mt-1 flex flex-wrap gap-1.5">
-                {["🎁", "🍦", "🍕", "📱", "🎬", "🌙", "🧸", "🛝", "🎮", "🍭", "🎨", "⚽"].map(
-                  (e) => (
+            <div className="mt-3">
+              <span className="text-xs font-bold text-muted-foreground">
+                {lang === "ru" ? "Тип награды" : "Reward type"}
+              </span>
+              <div className="mt-1 grid grid-cols-2 gap-2">
+                {(
+                  [
+                    { k: "regular", label: lang === "ru" ? "Обычная" : "Regular", ico: "🎁" },
+                    { k: "money", label: lang === "ru" ? "Деньги" : "Money", ico: "💵" },
+                  ] as const
+                ).map((opt) => {
+                  const active =
+                    opt.k === "money"
+                      ? rewardForm.emoji === MONEY_EMOJI
+                      : rewardForm.emoji !== MONEY_EMOJI;
+                  return (
                     <button
                       type="button"
-                      key={e}
-                      onClick={() => setRewardForm({ ...rewardForm, emoji: e })}
-                      className={`h-10 w-10 rounded-xl text-xl ${
-                        rewardForm.emoji === e ? "bg-primary/20 ring-2 ring-primary" : "bg-muted"
+                      key={opt.k}
+                      onClick={() =>
+                        setRewardForm((f) => ({
+                          ...f,
+                          emoji: opt.k === "money" ? MONEY_EMOJI : f.emoji === MONEY_EMOJI ? "🎁" : f.emoji,
+                        }))
+                      }
+                      className={`rounded-xl px-3 py-2 text-sm font-extrabold ${
+                        active ? "bg-primary/20 ring-2 ring-primary" : "bg-muted"
                       }`}
                     >
-                      {e}
+                      {opt.ico} {opt.label}
                     </button>
-                  ),
-                )}
+                  );
+                })}
               </div>
-            </label>
+            </div>
 
-            <label className="mt-3 block">
-              <span className="text-xs font-bold text-muted-foreground">
-                {tr("cost")}: <span className="text-coin">🪙 {rewardForm.cost}</span>
-              </span>
-              <input
-                type="range"
-                min={5}
-                max={500}
-                step={5}
-                value={rewardForm.cost}
-                onChange={(e) => setRewardForm({ ...rewardForm, cost: Number(e.target.value) })}
-                className="mt-2 w-full accent-[color:var(--color-primary)]"
-              />
-            </label>
+            {rewardForm.emoji !== MONEY_EMOJI && (
+              <label className="mt-3 block">
+                <span className="text-xs font-bold text-muted-foreground">{tr("rewardEmoji")}</span>
+                <div className="mt-1 flex flex-wrap gap-1.5">
+                  {["🎁", "🍦", "🍕", "📱", "🎬", "🌙", "🧸", "🛝", "🎮", "🍭", "🎨", "⚽"].map(
+                    (e) => (
+                      <button
+                        type="button"
+                        key={e}
+                        onClick={() => setRewardForm({ ...rewardForm, emoji: e })}
+                        className={`h-10 w-10 rounded-xl text-xl ${
+                          rewardForm.emoji === e ? "bg-primary/20 ring-2 ring-primary" : "bg-muted"
+                        }`}
+                      >
+                        {e}
+                      </button>
+                    ),
+                  )}
+                </div>
+              </label>
+            )}
+
+            {rewardForm.emoji === MONEY_EMOJI ? (
+              <label className="mt-3 block">
+                <span className="text-xs font-bold text-muted-foreground">
+                  {lang === "ru" ? "Сумма" : "Amount"}:{" "}
+                  <span>💵 {Math.round(rewardForm.cost / COINS_PER_RUBLE)} ₽</span>{" "}
+                  <span className="text-coin">(🪙 {rewardForm.cost})</span>
+                </span>
+                <input
+                  type="number"
+                  min={1}
+                  step={1}
+                  value={Math.round(rewardForm.cost / COINS_PER_RUBLE) || ""}
+                  onChange={(e) =>
+                    setRewardForm({
+                      ...rewardForm,
+                      cost: Math.max(1, Number(e.target.value) || 0) * COINS_PER_RUBLE,
+                    })
+                  }
+                  placeholder={lang === "ru" ? "напр. 100" : "e.g. 100"}
+                  className="mt-1 w-full rounded-xl border-2 border-border bg-background px-3 py-2 font-bold outline-none focus:border-primary"
+                />
+              </label>
+            ) : (
+              <label className="mt-3 block">
+                <span className="text-xs font-bold text-muted-foreground">
+                  {tr("cost")}: <span className="text-coin">🪙 {rewardForm.cost}</span>
+                </span>
+                <input
+                  type="range"
+                  min={5}
+                  max={500}
+                  step={5}
+                  value={rewardForm.cost}
+                  onChange={(e) => setRewardForm({ ...rewardForm, cost: Number(e.target.value) })}
+                  className="mt-2 w-full accent-[color:var(--color-primary)]"
+                />
+              </label>
+            )}
 
             <label className="mt-3 flex items-center gap-2 text-sm font-bold">
               <input
