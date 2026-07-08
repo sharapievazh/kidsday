@@ -595,7 +595,7 @@ function ParentPage() {
               <input
                 value={form.title_ru}
                 onChange={(e) => setForm({ ...form, title_ru: e.target.value })}
-                placeholder="напр. Почистить зубы"
+                placeholder={TASK_PLACEHOLDERS[form.category].ru}
                 className="mt-1 w-full rounded-xl border-2 border-border bg-background px-3 py-2 font-bold outline-none focus:border-primary"
               />
             </label>
