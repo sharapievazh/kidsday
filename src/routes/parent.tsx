@@ -1118,7 +1118,7 @@ function ReviewPane({
               {cat ? CATEGORY_EMOJI[cat] : "✅"}
             </div>
             <div className="min-w-0 flex-1">
-              <div className="truncate font-bold">{it.task?.title ?? "Deleted quest"}</div>
+              <div className="truncate font-bold">{it.task ? localizedTaskTitle(it.task, lang) : "Deleted quest"}</div>
               <div className="mt-0.5 text-xs text-muted-foreground">
                 {k?.emoji ?? "🙂"} {k?.name ?? "?"} · 🪙 {it.coins_awarded} ·{" "}
                 {new Date(it.created_at).toLocaleString()}
