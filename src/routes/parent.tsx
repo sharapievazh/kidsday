@@ -856,20 +856,25 @@ function ParentPage() {
             <label className="mt-3 block">
               <span className="text-xs font-bold text-muted-foreground">{tr("avatarEmoji")}</span>
               <div className="mt-1 flex flex-wrap gap-1.5">
-                {["🌸", "🦊", "🐻", "🐯", "🐼", "🦄", "🐶", "🐱", "🦁", "🐵", "🐧", "🐸"].map(
-                  (e) => (
-                    <button
-                      type="button"
-                      key={e}
-                      onClick={() => setNewKid({ ...newKid, emoji: e })}
-                      className={`h-10 w-10 rounded-xl text-xl ${
-                        newKid.emoji === e ? "bg-primary/20 ring-2 ring-primary" : "bg-muted"
-                      }`}
-                    >
-                      {e}
-                    </button>
-                  ),
-                )}
+                {[
+                  "🌸", "🦊", "🐻", "🐯", "🐼", "🦄", "🐶", "🐱", "🦁", "🐵",
+                  "🐧", "🐸", "🐨", "🐰", "🐷", "🐮", "🐔", "🐙", "🦋", "🐝",
+                  "🐢", "🦖", "🦥", "🦩", "🦉", "🐳", "🐬", "🦈", "🦕", "🐲",
+                  "🌟", "⭐", "🌈", "🍀", "🌻", "🌵", "🍄", "🌊", "🔥", "❄️",
+                  "🎈", "🎨", "🎭", "🎪", "🚀", "⚽", "🏀", "🎮", "🧸", "👑",
+                  "🧙", "🧚", "🧛", "🧜", "🧝", "🦸", "🥷", "👽", "🤖", "😺",
+                ].map((e) => (
+                  <button
+                    type="button"
+                    key={e}
+                    onClick={() => setNewKid({ ...newKid, emoji: e })}
+                    className={`h-10 w-10 rounded-xl text-xl ${
+                      newKid.emoji === e ? "bg-primary/20 ring-2 ring-primary" : "bg-muted"
+                    }`}
+                  >
+                    {e}
+                  </button>
+                ))}
               </div>
             </label>
 
