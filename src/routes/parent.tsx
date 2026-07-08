@@ -77,7 +77,7 @@ function EmojiPicker({
   initialCount?: number;
 }) {
   const [expanded, setExpanded] = useState(false);
-  const { t } = useT();
+  const t = useT();
   // Ensure the selected emoji is always visible in the collapsed view.
   const base = options.slice(0, initialCount);
   if (!base.includes(value) && options.includes(value)) {
