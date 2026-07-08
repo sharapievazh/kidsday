@@ -107,6 +107,8 @@ const DICT = {
     cost: "Cost (coins)",
     active: "Active",
     inactive: "Inactive",
+    titleRequired: "Please enter a title (English or Russian)",
+    nameRequired: "Please enter a name (English or Russian)",
     // Categories
     cat_Hygiene: "Hygiene",
     cat_Chores: "Chores",
