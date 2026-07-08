@@ -41,6 +41,79 @@ import {
 import { TopBar } from "@/components/RoleSwitcher";
 import { useLang, useT } from "@/lib/i18n";
 
+const KID_EMOJIS = Array.from(
+  new Set([
+    "🌸", "🦊", "🐻", "🐯", "🐼", "🦄", "🐶", "🐱", "🦁", "🐵",
+    "🐧", "🐸", "🐨", "🐰", "🐷", "🐮", "🐔", "🐙", "🦋", "🐝",
+    "🐢", "🦖", "🦥", "🦩", "🦉", "🐳", "🐬", "🦈", "🐲",
+    "🌟", "🌈", "🍀", "🌻", "🌵", "🍄", "🌊", "🔥", "❄️",
+    "🎈", "🎨", "🚀", "⚽", "🎮", "🧸", "👑",
+    "🧙", "🧚", "🦸", "🥷", "👽", "🤖", "😺",
+  ]),
+);
+
+const REWARD_EMOJIS = Array.from(
+  new Set([
+    "🎁", "💵", "💰", "🍦", "🍕", "🎮", "🎬", "📱", "🧸", "🍭",
+    "🎨", "⚽", "💸", "🤑", "🏆", "🥇", "🎯", "🎟️",
+    "🎪", "🎢", "🎡", "🎠", "🎳", "🚴", "🛼", "🛹", "🏓",
+    "🎾", "🏀", "🏈", "⚾", "🏐", "🎸", "🎹", "🥁", "🎤", "🎧",
+    "📚", "✏️", "🖍️", "🧩", "🪁", "🪀", "🎲", "♟️", "🎰", "🃏",
+    "🍔", "🍟", "🌭", "🍿", "🍩", "🍪", "🎂", "🍰", "🧁", "🍫",
+    "🍬", "🍡", "🍨", "🍧", "🍇", "🍓", "🍎", "🍌", "🍉", "🥑",
+    "🚲", "🛴", "🏕️", "🏖️", "🎆", "🎇", "🌠", "🌙", "🛝",
+  ]),
+);
+
+function EmojiPicker({
+  value,
+  onChange,
+  options,
+  initialCount = 12,
+}: {
+  value: string;
+  onChange: (e: string) => void;
+  options: string[];
+  initialCount?: number;
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const t = useT();
+  // Ensure the selected emoji is always visible in the collapsed view.
+  const base = options.slice(0, initialCount);
+  if (!base.includes(value) && options.includes(value)) {
+    base[base.length - 1] = value;
+  }
+  const shown = expanded ? options : base;
+  const canExpand = options.length > initialCount;
+  return (
+    <div className="mt-1">
+      <div className="flex flex-wrap gap-1.5">
+        {shown.map((e) => (
+          <button
+            type="button"
+            key={e}
+            onClick={() => onChange(e)}
+            className={`h-10 w-10 rounded-xl text-xl ${
+              value === e ? "bg-primary/20 ring-2 ring-primary" : "bg-muted"
+            }`}
+          >
+            {e}
+          </button>
+        ))}
+        {canExpand && (
+          <button
+            type="button"
+            onClick={() => setExpanded((v) => !v)}
+            className="h-10 rounded-xl bg-muted px-3 text-xs font-extrabold text-muted-foreground"
+          >
+            {expanded ? t("showLess") : `${t("showMore")} +${options.length - initialCount}`}
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export const Route = createFileRoute("/parent")({
   head: () => ({
     meta: [
@@ -594,7 +667,7 @@ function ParentPage() {
           <form
             onClick={(e) => e.stopPropagation()}
             onSubmit={submit}
-            className="w-full max-w-md rounded-t-3xl bg-card p-5 shadow-2xl sm:rounded-3xl"
+            className="flex max-h-[90vh] w-full max-w-md flex-col overflow-y-auto rounded-t-3xl bg-card p-5 shadow-2xl sm:rounded-3xl"
           >
             <div className="mb-3 flex items-center justify-between">
               <h3 className="text-lg font-extrabold">
@@ -829,7 +902,7 @@ function ParentPage() {
                 onError: (err) => toast.error(err instanceof Error ? err.message : "Failed"),
               });
             }}
-            className="w-full max-w-md rounded-t-3xl bg-card p-5 shadow-2xl sm:rounded-3xl"
+            className="flex max-h-[90vh] w-full max-w-md flex-col overflow-y-auto rounded-t-3xl bg-card p-5 shadow-2xl sm:rounded-3xl"
           >
             <div className="mb-3 flex items-center justify-between">
               <h3 className="text-lg font-extrabold">{tr("addChildTitle")}</h3>
@@ -855,27 +928,11 @@ function ParentPage() {
 
             <label className="mt-3 block">
               <span className="text-xs font-bold text-muted-foreground">{tr("avatarEmoji")}</span>
-              <div className="mt-1 flex flex-wrap gap-1.5">
-                {[
-                  "🌸", "🦊", "🐻", "🐯", "🐼", "🦄", "🐶", "🐱", "🦁", "🐵",
-                  "🐧", "🐸", "🐨", "🐰", "🐷", "🐮", "🐔", "🐙", "🦋", "🐝",
-                  "🐢", "🦖", "🦥", "🦩", "🦉", "🐳", "🐬", "🦈", "🦕", "🐲",
-                  "🌟", "⭐", "🌈", "🍀", "🌻", "🌵", "🍄", "🌊", "🔥", "❄️",
-                  "🎈", "🎨", "🎭", "🎪", "🚀", "⚽", "🏀", "🎮", "🧸", "👑",
-                  "🧙", "🧚", "🧛", "🧜", "🧝", "🦸", "🥷", "👽", "🤖", "😺",
-                ].map((e) => (
-                  <button
-                    type="button"
-                    key={e}
-                    onClick={() => setNewKid({ ...newKid, emoji: e })}
-                    className={`h-10 w-10 rounded-xl text-xl ${
-                      newKid.emoji === e ? "bg-primary/20 ring-2 ring-primary" : "bg-muted"
-                    }`}
-                  >
-                    {e}
-                  </button>
-                ))}
-              </div>
+              <EmojiPicker
+                value={newKid.emoji}
+                onChange={(e) => setNewKid({ ...newKid, emoji: e })}
+                options={KID_EMOJIS}
+              />
             </label>
 
             <label className="mt-3 block">
@@ -941,7 +998,7 @@ function ParentPage() {
                 addReward.mutate(payload, { onSuccess: onDone, onError: onErr });
               }
             }}
-            className="w-full max-w-md rounded-t-3xl bg-card p-5 shadow-2xl sm:rounded-3xl"
+            className="flex max-h-[90vh] w-full max-w-md flex-col overflow-y-auto rounded-t-3xl bg-card p-5 shadow-2xl sm:rounded-3xl"
           >
             <div className="mb-3 flex items-center justify-between">
               <h3 className="flex items-center gap-2 text-lg font-extrabold">
@@ -1000,29 +1057,11 @@ function ParentPage() {
 
             <label className="mt-3 block">
               <span className="text-xs font-bold text-muted-foreground">{tr("rewardEmoji")}</span>
-              <div className="mt-1 flex flex-wrap gap-1.5">
-                {[
-                  "🎁", "🍦", "🍕", "📱", "🎬", "🌙", "🧸", "🛝", "🎮", "🍭",
-                  "🎨", "⚽", "💵", "💰", "💸", "🤑", "🏆", "🥇", "🎯", "🎟️",
-                  "🎪", "🎢", "🎡", "🎠", "🎳", "🏊", "🚴", "🛼", "🛹", "🏓",
-                  "🎾", "🏀", "🏈", "⚾", "🏐", "🎸", "🎹", "🥁", "🎤", "🎧",
-                  "📚", "✏️", "🖍️", "🧩", "🪁", "🪀", "🎲", "♟️", "🎰", "🃏",
-                  "🍔", "🍟", "🌭", "🍿", "🍩", "🍪", "🎂", "🍰", "🧁", "🍫",
-                  "🍬", "🍡", "🍨", "🍧", "🍇", "🍓", "🍎", "🍌", "🍉", "🥑",
-                  "🚲", "🛴", "🏕️", "🏖️", "🎢", "🎆", "🎇", "🌠", "🦸", "🦄",
-                ].map((e) => (
-                  <button
-                    type="button"
-                    key={e}
-                    onClick={() => setRewardForm({ ...rewardForm, emoji: e })}
-                    className={`h-10 w-10 rounded-xl text-xl ${
-                      rewardForm.emoji === e ? "bg-primary/20 ring-2 ring-primary" : "bg-muted"
-                    }`}
-                  >
-                    {e}
-                  </button>
-                ))}
-              </div>
+              <EmojiPicker
+                value={rewardForm.emoji}
+                onChange={(e) => setRewardForm({ ...rewardForm, emoji: e })}
+                options={REWARD_EMOJIS}
+              />
             </label>
 
             <label className="mt-3 block">

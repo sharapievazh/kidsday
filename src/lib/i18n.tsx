@@ -114,6 +114,8 @@ const DICT = {
     nameRequired: "Please enter a name (English or Russian)",
     moneyPreset: "💵 Money (exchange all coins)",
     moneyPresetHint: "Any purchase converts ALL current coins into real money.",
+    showMore: "Show more",
+    showLess: "Show less",
     allCoins: "All",
     confirmExchange: (n: number) => `Exchange all ${n} coins for money?`,
     // Categories
@@ -238,6 +240,8 @@ const DICT = {
     nameRequired: "Введите название (на английском или русском)",
     moneyPreset: "💵 Деньги (обменять все монеты)",
     moneyPresetHint: "Любая покупка обменивает ВСЕ текущие монеты на реальные деньги.",
+    showMore: "Показать ещё",
+    showLess: "Свернуть",
     allCoins: "Все",
     confirmExchange: (n: number) => `Обменять все ${n} монет на деньги?`,
     cat_Hygiene: "Гигиена",
