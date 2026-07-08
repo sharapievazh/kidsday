@@ -55,6 +55,17 @@ export const Route = createFileRoute("/parent")({
 
 type ParentTab = "tasks" | "family" | "review" | "approvals";
 
+const TASK_PLACEHOLDERS: Record<Category, { en: string; ru: string }> = {
+  Hygiene: { en: "e.g. Brush teeth", ru: "напр. Почистить зубы" },
+  Chores: { en: "e.g. Tidy up the room", ru: "напр. Убраться в комнате" },
+  "Self-Education": { en: "e.g. Logic puzzle", ru: "напр. Упражнение на логику" },
+  Reading: { en: "e.g. Read 20 pages", ru: "напр. Прочитать 20 страниц" },
+  Piano: { en: "e.g. Piano practice", ru: "напр. Игра на пианино" },
+  Chess: { en: "e.g. Chess puzzle", ru: "напр. Шахматная задача" },
+  Sports: { en: "e.g. Morning workout", ru: "напр. Утренняя зарядка" },
+  Creative: { en: "e.g. Draw a picture", ru: "напр. Нарисовать рисунок" },
+};
+
 type FormState = {
   title: string;
   title_ru: string;
