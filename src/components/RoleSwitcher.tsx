@@ -11,6 +11,7 @@ export function RoleSwitcher() {
   const kidsQ = useKids(profileQ.data?.id);
   const location = useLocation();
   const navigate = useNavigate();
+  const t = useT();
 
   if (!session || location.pathname === "/auth") return null;
 
