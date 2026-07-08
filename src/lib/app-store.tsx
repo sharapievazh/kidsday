@@ -40,7 +40,7 @@ export const CATEGORY_EMOJI: Record<Category, string> = {
   Reading: "📚",
   Piano: "🎹",
   Chess: "♟️",
-  Sports: "⚽",
+  Sports: "💪",
   Creative: "🎨",
 };
 

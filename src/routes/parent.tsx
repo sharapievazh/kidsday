@@ -6,7 +6,7 @@ import { Pencil, Plus, Trash2, X, UserPlus, RefreshCw, KeyRound, Gift } from "lu
 import {
   CATEGORIES,
   CATEGORY_EMOJI,
-  SCHEDULE_LABEL,
+  
   WEEKDAYS,
   categoryToken,
   coinsFor,
@@ -38,6 +38,7 @@ import {
   type Task,
 } from "@/lib/app-store";
 import { TopBar } from "@/components/RoleSwitcher";
+import { useT } from "@/lib/i18n";
 
 
 export const Route = createFileRoute("/parent")({
@@ -63,6 +64,7 @@ type FormState = {
 };
 
 function ParentPage() {
+  const tr = useT();
   const { session } = useSession();
   const profileQ = useParentProfile(!!session);
   const parentId = profileQ.data?.id;
@@ -134,7 +136,8 @@ function ParentPage() {
   const [form, setForm] = useState<FormState>(blank);
 
   const openCreate = () => {
-    setForm({ ...blank, assignee_id: defaultAssignee });
+    const preferred = filter !== "all" && kids.some((k) => k.id === filter) ? filter : defaultAssignee;
+    setForm({ ...blank, assignee_id: preferred });
     setEditing(null);
     setCreating(true);
   };
@@ -191,13 +194,13 @@ function ParentPage() {
 
   return (
     <div>
-      <TopBar title="Parent" />
+      <TopBar title={tr("parent")} />
       <div className="px-4 pt-4">
         <div className="rounded-3xl bg-gradient-to-br from-primary to-success p-5 text-primary-foreground shadow">
           <div className="text-xs font-bold uppercase tracking-widest opacity-80">
-            Welcome back
+            {tr("welcomeBack")}
           </div>
-          <h1 className="mt-1 text-2xl font-extrabold">Parent Dashboard</h1>
+          <h1 className="mt-1 text-2xl font-extrabold">{tr("parentDashboard")}</h1>
           <div className="mt-3 grid grid-cols-2 gap-3">
             {loading ? (
               <>
@@ -223,23 +226,23 @@ function ParentPage() {
         <div className="mt-4 grid grid-cols-4 gap-1 rounded-full bg-muted p-1">
           {(
             [
-              { id: "tasks", label: "Tasks", badge: 0 },
-              { id: "family", label: "Family", badge: 0 },
-              { id: "review", label: "Review", badge: newReviewCount },
-              { id: "approvals", label: "Rewards", badge: pending.length },
+              { id: "tasks", label: tr("tabTasks"), badge: 0 },
+              { id: "family", label: tr("tabFamily"), badge: 0 },
+              { id: "review", label: tr("tabReview"), badge: newReviewCount },
+              { id: "approvals", label: tr("tabRewards"), badge: pending.length },
             ] as { id: ParentTab; label: string; badge: number }[]
-          ).map((t) => (
+          ).map((tab_) => (
             <button
-              key={t.id}
-              onClick={() => setTab(t.id)}
+              key={tab_.id}
+              onClick={() => setTab(tab_.id)}
               className={`relative rounded-full py-2 text-xs font-extrabold ${
-                tab === t.id ? "bg-card shadow-sm" : "text-muted-foreground"
+                tab === tab_.id ? "bg-card shadow-sm" : "text-muted-foreground"
               }`}
             >
-              {t.label}
-              {t.badge > 0 && (
+              {tab_.label}
+              {tab_.badge > 0 && (
                 <span className="absolute -right-0.5 -top-0.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-extrabold text-destructive-foreground shadow">
-                  {t.badge > 99 ? "99+" : t.badge}
+                  {tab_.badge > 99 ? "99+" : tab_.badge}
                 </span>
               )}
             </button>
@@ -259,7 +262,7 @@ function ParentPage() {
                       : "text-muted-foreground"
                   }`}
                 >
-                  All
+                  {tr("all")}
                 </button>
                 {kids.map((k) => (
                   <button
@@ -279,13 +282,13 @@ function ParentPage() {
                 onClick={openCreate}
                 className="flex items-center gap-1 rounded-full bg-primary px-3 py-2 text-sm font-extrabold text-primary-foreground btn-chunky active:btn-chunky-press"
               >
-                <Plus className="h-4 w-4" /> New
+                <Plus className="h-4 w-4" /> {tr("new")}
               </button>
             </div>
 
             <div className="space-y-2">
               {tasksQ.isLoading && (
-                <p className="text-center text-sm text-muted-foreground">Loading tasks…</p>
+                <p className="text-center text-sm text-muted-foreground">{tr("loading")}</p>
               )}
               {filtered.map((t) => {
                 const token = categoryToken(t.category);
@@ -308,12 +311,12 @@ function ParentPage() {
                           className="rounded-full px-1.5 py-0.5 text-white"
                           style={{ backgroundColor: `var(--${token})` }}
                         >
-                          {t.category}
+                          {tr(`cat_${t.category}`)}
                         </span>
                         <span className="rounded-full bg-muted px-1.5 py-0.5">
                           {assignee?.emoji ?? "🙂"} {assignee?.name ?? "?"}
                         </span>
-                        <span className="rounded-full bg-muted px-1.5 py-0.5">{t.frequency}</span>
+                        <span className="rounded-full bg-muted px-1.5 py-0.5">{tr(t.frequency)}</span>
                         <span className="text-coin">🪙 {t.coins}</span>
                       </div>
                     </div>
@@ -342,7 +345,7 @@ function ParentPage() {
               })}
               {!tasksQ.isLoading && filtered.length === 0 && (
                 <p className="rounded-2xl border-2 border-dashed border-border p-6 text-center text-sm text-muted-foreground">
-                  No quests. Tap "New" to create one.
+                  {tr("noQuestsCreate")}
                 </p>
               )}
             </div>
@@ -351,7 +354,7 @@ function ParentPage() {
           <div className="mt-4 space-y-2">
             <div className="mb-2 flex items-center justify-between">
               <h2 className="text-xs font-extrabold uppercase tracking-widest text-muted-foreground">
-                Reward Store ({rewards.length})
+                {tr("manageRewards")} ({rewards.length})
               </h2>
               <button
                 onClick={() => {
@@ -361,13 +364,13 @@ function ParentPage() {
                 }}
                 className="flex items-center gap-1 rounded-full bg-primary px-3 py-1.5 text-xs font-extrabold text-primary-foreground btn-chunky active:btn-chunky-press"
               >
-                <Plus className="h-3.5 w-3.5" /> New reward
+                <Plus className="h-3.5 w-3.5" /> {tr("newReward")}
               </button>
             </div>
-            {rewardsQ.isLoading && <p className="text-sm text-muted-foreground">Loading…</p>}
+            {rewardsQ.isLoading && <p className="text-sm text-muted-foreground">{tr("loading")}</p>}
             {!rewardsQ.isLoading && rewards.length === 0 && (
               <p className="rounded-2xl border-2 border-dashed border-border p-6 text-center text-sm text-muted-foreground">
-                No rewards yet. Add one!
+                {tr("noQuestsCreate")}
               </p>
             )}
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
@@ -418,15 +421,15 @@ function ParentPage() {
             </div>
 
             <h2 className="mt-6 mb-1 text-xs font-extrabold uppercase tracking-widest text-muted-foreground">
-              Pending ({pending.length})
+              {tr("pendingCount")(pending.length)}
             </h2>
 
             {purchasesQ.isLoading && (
-              <p className="text-sm text-muted-foreground">Loading…</p>
+              <p className="text-sm text-muted-foreground">{tr("loading")}</p>
             )}
             {!purchasesQ.isLoading && pending.length === 0 && (
               <p className="rounded-2xl border-2 border-dashed border-border p-6 text-center text-sm text-muted-foreground">
-                No pending rewards. 🎉
+                {tr("noPending")}
               </p>
             )}
             {pending.map((p) => {
@@ -453,14 +456,14 @@ function ParentPage() {
                     }
                     className="rounded-full bg-primary px-3 py-2 text-xs font-extrabold text-primary-foreground btn-chunky active:btn-chunky-press"
                   >
-                    Deliver
+                    {tr("deliver")}
                   </button>
                 </div>
               );
             })}
 
             <h2 className="mt-6 mb-1 text-xs font-extrabold uppercase tracking-widest text-muted-foreground">
-              Delivered
+              {tr("deliveredHeader")}
             </h2>
             {purchases
               .filter((p) => p.delivered)
@@ -527,7 +530,7 @@ function ParentPage() {
 
         <div className="mt-8 text-center">
           <Link to="/" className="text-xs font-bold text-muted-foreground underline">
-            ← Back to profiles
+            ← {tr("backToProfiles").replace(/^←\s*/, "")}
           </Link>
         </div>
       </div>
@@ -544,7 +547,7 @@ function ParentPage() {
           >
             <div className="mb-3 flex items-center justify-between">
               <h3 className="text-lg font-extrabold">
-                {editing ? "Edit quest" : "New quest"}
+                {editing ? tr("editQuest") : tr("newQuest")}
               </h3>
               <button type="button" onClick={close} className="rounded-full p-1 hover:bg-muted">
                 <X className="h-5 w-5" />
@@ -552,7 +555,7 @@ function ParentPage() {
             </div>
 
             <label className="block">
-              <span className="text-xs font-bold text-muted-foreground">Title</span>
+              <span className="text-xs font-bold text-muted-foreground">{tr("title")}</span>
               <input
                 value={form.title}
                 onChange={(e) => setForm({ ...form, title: e.target.value })}
@@ -563,7 +566,7 @@ function ParentPage() {
             </label>
 
             <label className="mt-3 block">
-              <span className="text-xs font-bold text-muted-foreground">Category</span>
+              <span className="text-xs font-bold text-muted-foreground">{tr("category")}</span>
               <div className="mt-1 grid grid-cols-3 gap-1.5">
                 {CATEGORIES.map((c) => {
                   const sel = form.category === c;
@@ -578,7 +581,7 @@ function ParentPage() {
                       }`}
                       style={sel ? { backgroundColor: `var(--${token})` } : undefined}
                     >
-                      {CATEGORY_EMOJI[c]} {c}
+                      {CATEGORY_EMOJI[c]} {tr(`cat_${c}`)}
                     </button>
                   );
                 })}
@@ -587,7 +590,7 @@ function ParentPage() {
 
             <div className="mt-3 grid grid-cols-2 gap-3">
               <label className="block">
-                <span className="text-xs font-bold text-muted-foreground">Assignee</span>
+                <span className="text-xs font-bold text-muted-foreground">{tr("assignee")}</span>
                 <div className="mt-1 flex gap-1.5">
                   {kids.map((k) => (
                     <button
@@ -606,7 +609,7 @@ function ParentPage() {
                 </div>
               </label>
               <label className="block">
-                <span className="text-xs font-bold text-muted-foreground">Frequency</span>
+                <span className="text-xs font-bold text-muted-foreground">{tr("frequency")}</span>
                 <div className="mt-1 flex gap-1.5">
                   {(["daily", "weekly"] as Frequency[]).map((f) => (
                     <button
@@ -619,7 +622,7 @@ function ParentPage() {
                           : "bg-muted text-muted-foreground"
                       }`}
                     >
-                      {f}
+                      {tr(f)}
                     </button>
                   ))}
                 </div>
@@ -628,7 +631,7 @@ function ParentPage() {
 
             <label className="mt-3 block">
               <span className="text-xs font-bold text-muted-foreground">
-                Coin reward: <span className="text-coin">🪙 {form.coins}</span>
+                {tr("coinReward")}: <span className="text-coin">🪙 {form.coins}</span>
               </span>
               <input
                 type="range"
@@ -641,7 +644,7 @@ function ParentPage() {
             </label>
 
             <label className="mt-3 block">
-              <span className="text-xs font-bold text-muted-foreground">Active days</span>
+              <span className="text-xs font-bold text-muted-foreground">{tr("activeDays")}</span>
               <div className="mt-1 flex gap-1">
                 {WEEKDAYS.map((d) => {
                   const sel = form.days_of_week.includes(d.n);
@@ -671,7 +674,7 @@ function ParentPage() {
             </label>
 
             <label className="mt-3 block">
-              <span className="text-xs font-bold text-muted-foreground">Schedule type</span>
+              <span className="text-xs font-bold text-muted-foreground">{tr("scheduleType")}</span>
               <div className="mt-1 grid grid-cols-3 gap-1.5">
                 {(["always", "school_days", "holidays"] as ScheduleType[]).map((s) => (
                   <button
@@ -692,7 +695,7 @@ function ParentPage() {
                         : "bg-muted text-muted-foreground"
                     }`}
                   >
-                    {SCHEDULE_LABEL[s]}
+                    {tr(`sched_${s}`)}
                   </button>
                 ))}
               </div>
@@ -715,7 +718,7 @@ function ParentPage() {
                   }}
                   className="rounded-full bg-destructive/10 px-4 py-2.5 text-sm font-extrabold text-destructive"
                 >
-                  Delete
+                  {tr("delete")}
                 </button>
               )}
               <button
@@ -724,10 +727,10 @@ function ParentPage() {
                 className="flex-1 rounded-full bg-primary py-3 font-extrabold text-primary-foreground btn-chunky active:btn-chunky-press disabled:opacity-50"
               >
                 {addTask.isPending || updateTask.isPending
-                  ? "Saving…"
+                  ? tr("saving")
                   : editing
-                    ? "Save changes"
-                    : "Create quest"}
+                    ? tr("saveChanges")
+                    : tr("createQuest")}
               </button>
             </div>
           </form>
@@ -756,7 +759,7 @@ function ParentPage() {
             className="w-full max-w-md rounded-t-3xl bg-card p-5 shadow-2xl sm:rounded-3xl"
           >
             <div className="mb-3 flex items-center justify-between">
-              <h3 className="text-lg font-extrabold">Add a child</h3>
+              <h3 className="text-lg font-extrabold">{tr("addChildTitle")}</h3>
               <button
                 type="button"
                 onClick={() => setShowAddKid(false)}
@@ -767,7 +770,7 @@ function ParentPage() {
             </div>
 
             <label className="block">
-              <span className="text-xs font-bold text-muted-foreground">Name</span>
+              <span className="text-xs font-bold text-muted-foreground">{tr("name")}</span>
               <input
                 value={newKid.name}
                 onChange={(e) => setNewKid({ ...newKid, name: e.target.value })}
@@ -778,7 +781,7 @@ function ParentPage() {
             </label>
 
             <label className="mt-3 block">
-              <span className="text-xs font-bold text-muted-foreground">Avatar (emoji)</span>
+              <span className="text-xs font-bold text-muted-foreground">{tr("avatarEmoji")}</span>
               <div className="mt-1 flex flex-wrap gap-1.5">
                 {["🌸", "🦊", "🐻", "🐯", "🐼", "🦄", "🐶", "🐱", "🦁", "🐵", "🐧", "🐸"].map(
                   (e) => (
@@ -799,7 +802,7 @@ function ParentPage() {
 
             <label className="mt-3 block">
               <span className="text-xs font-bold text-muted-foreground">
-                6-digit PIN (kid uses this to sign in)
+                {tr("sixDigitPin")}
               </span>
               <div className="mt-1 flex gap-2">
                 <input
@@ -820,7 +823,7 @@ function ParentPage() {
                 </button>
               </div>
               <p className="mt-1 text-xs text-muted-foreground">
-                Share this PIN with your child. They tap "Login as Kid" on the sign-in screen.
+                {tr("sharePinHint")}
               </p>
             </label>
 
@@ -829,7 +832,7 @@ function ParentPage() {
               disabled={createKid.isPending}
               className="mt-5 w-full rounded-full bg-primary py-3 font-extrabold text-primary-foreground btn-chunky active:btn-chunky-press disabled:opacity-50"
             >
-              {createKid.isPending ? "Creating…" : "Create child account"}
+              {createKid.isPending ? tr("creating") : tr("createChildAccount")}
             </button>
           </form>
         </div>
@@ -865,7 +868,7 @@ function ParentPage() {
           >
             <div className="mb-3 flex items-center justify-between">
               <h3 className="flex items-center gap-2 text-lg font-extrabold">
-                <Gift className="h-5 w-5" /> {editingReward ? "Edit reward" : "New reward"}
+                <Gift className="h-5 w-5" /> {editingReward ? tr("editReward") : tr("newReward")}
               </h3>
               <button
                 type="button"
@@ -877,7 +880,7 @@ function ParentPage() {
             </div>
 
             <label className="block">
-              <span className="text-xs font-bold text-muted-foreground">Reward name</span>
+              <span className="text-xs font-bold text-muted-foreground">{tr("rewardName")}</span>
               <input
                 value={rewardForm.name}
                 onChange={(e) => setRewardForm({ ...rewardForm, name: e.target.value })}
@@ -888,7 +891,7 @@ function ParentPage() {
             </label>
 
             <label className="mt-3 block">
-              <span className="text-xs font-bold text-muted-foreground">Emoji</span>
+              <span className="text-xs font-bold text-muted-foreground">{tr("rewardEmoji")}</span>
               <div className="mt-1 flex flex-wrap gap-1.5">
                 {["🎁", "🍦", "🍕", "📱", "🎬", "🌙", "🧸", "🛝", "🎮", "🍭", "🎨", "⚽"].map(
                   (e) => (
@@ -909,7 +912,7 @@ function ParentPage() {
 
             <label className="mt-3 block">
               <span className="text-xs font-bold text-muted-foreground">
-                Cost (coins): <span className="text-coin">🪙 {rewardForm.cost}</span>
+                {tr("cost")}: <span className="text-coin">🪙 {rewardForm.cost}</span>
               </span>
               <input
                 type="range"
@@ -928,7 +931,7 @@ function ParentPage() {
                 checked={rewardForm.active}
                 onChange={(e) => setRewardForm({ ...rewardForm, active: e.target.checked })}
               />
-              Active (visible in the kid store)
+              {tr("active")}
             </label>
 
             <div className="mt-5 flex gap-2">
@@ -946,7 +949,7 @@ function ParentPage() {
                   }}
                   className="rounded-full bg-destructive/10 px-4 py-2.5 text-sm font-extrabold text-destructive"
                 >
-                  Delete
+                  {tr("delete")}
                 </button>
               )}
               <button
@@ -955,10 +958,10 @@ function ParentPage() {
                 className="flex-1 rounded-full bg-primary py-3 font-extrabold text-primary-foreground btn-chunky active:btn-chunky-press disabled:opacity-50"
               >
                 {addReward.isPending || updateReward.isPending
-                  ? "Saving…"
+                  ? tr("saving")
                   : editingReward
-                    ? "Save changes"
-                    : "Add reward"}
+                    ? tr("saveChanges")
+                    : tr("addReward")}
               </button>
             </div>
           </form>
@@ -982,23 +985,24 @@ function FamilyPane({
   onDelete: (id: string, name: string) => void;
   onRegenPin: (id: string, name: string) => void;
 }) {
+  const tr = useT();
   return (
     <div className="mt-4">
       <div className="mb-3 flex items-center justify-between">
         <h2 className="text-sm font-extrabold uppercase tracking-widest text-muted-foreground">
-          Family ({kids.length})
+          {tr("familyCount")(kids.length)}
         </h2>
         <button
           onClick={onAdd}
           className="flex items-center gap-1 rounded-full bg-primary px-3 py-2 text-sm font-extrabold text-primary-foreground btn-chunky active:btn-chunky-press"
         >
-          <UserPlus className="h-4 w-4" /> Add child
+          <UserPlus className="h-4 w-4" /> {tr("addChild")}
         </button>
       </div>
 
       {kids.length === 0 && (
         <p className="rounded-2xl border-2 border-dashed border-border p-6 text-center text-sm text-muted-foreground">
-          No children yet. Tap "Add child" to create their profile and PIN.
+          {tr("noChildren")}
         </p>
       )}
 
@@ -1054,15 +1058,16 @@ function ReviewPane({
   kidById: Record<string, import("@/lib/app-store").Profile>;
   onDispute: (id: string) => void;
 }) {
+  const tr = useT();
   return (
     <div className="mt-4 space-y-2">
       <h2 className="mb-1 text-xs font-extrabold uppercase tracking-widest text-muted-foreground">
-        Recent completions
+        {tr("recentCompletions")}
       </h2>
-      {loading && <p className="text-sm text-muted-foreground">Loading…</p>}
+      {loading && <p className="text-sm text-muted-foreground">{tr("loading")}</p>}
       {!loading && items.length === 0 && (
         <p className="rounded-2xl border-2 border-dashed border-border p-6 text-center text-sm text-muted-foreground">
-          No completions yet. They'll appear here in real-time. ⚡
+          {tr("noCompletionsYet")}
         </p>
       )}
       {items.map((it) => {
@@ -1095,7 +1100,7 @@ function ReviewPane({
               onClick={() => onDispute(it.id)}
               className="rounded-full bg-destructive/10 px-3 py-1.5 text-xs font-extrabold text-destructive"
             >
-              Dispute
+              {tr("dispute")}
             </button>
           </div>
         );
