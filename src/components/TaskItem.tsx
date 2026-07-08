@@ -10,15 +10,7 @@ import {
 } from "@/lib/app-store";
 import { useLang, useT } from "@/lib/i18n";
 
-export function TaskItem({
-  task,
-  kidId,
-  done,
-}: {
-  task: Task;
-  kidId: string;
-  done: boolean;
-}) {
+export function TaskItem({ task, kidId, done }: { task: Task; kidId: string; done: boolean }) {
   const toggle = useToggleTask();
   const { lang } = useLang();
   const tr = useT();

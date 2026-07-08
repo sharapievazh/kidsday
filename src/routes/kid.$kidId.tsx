@@ -84,7 +84,9 @@ function KidPage() {
       {
         onSuccess: () => {
           confetti({ particleCount: 120, spread: 90, origin: { y: 0.6 } });
-          toast.success(`${tr("rewardUnlocked")}: ${r.emoji ?? "🎁"} ${localizedRewardName(r, lang)}`);
+          toast.success(
+            `${tr("rewardUnlocked")}: ${r.emoji ?? "🎁"} ${localizedRewardName(r, lang)}`,
+          );
         },
         onError: (e) => toast.error(e instanceof Error ? e.message : "Could not buy"),
       },
@@ -181,14 +183,20 @@ function KidPage() {
                     onClick={() => handleBuy(r.id)}
                     disabled={buy.isPending}
                     className={`flex flex-col items-center rounded-2xl border-2 p-3 text-center transition-all active:scale-95 ${
-                      can ? "border-primary/40 bg-card hover:-translate-y-0.5" : "border-border bg-muted/50 opacity-70"
+                      can
+                        ? "border-primary/40 bg-card hover:-translate-y-0.5"
+                        : "border-border bg-muted/50 opacity-70"
                     }`}
                   >
                     <div className="text-4xl">{r.emoji ?? "🎁"}</div>
-                    <div className="mt-2 text-sm font-extrabold leading-tight">{localizedRewardName(r, lang)}</div>
+                    <div className="mt-2 text-sm font-extrabold leading-tight">
+                      {localizedRewardName(r, lang)}
+                    </div>
                     <div
                       className={`mt-2 rounded-full px-3 py-1 text-xs font-extrabold ${
-                        can ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                        can
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-muted text-muted-foreground"
                       }`}
                     >
                       🪙 {r.cost}
@@ -212,7 +220,8 @@ function KidPage() {
                 className="flex items-center justify-between rounded-xl border border-border bg-card px-3 py-2"
               >
                 <div className="text-sm font-bold">
-                  {p.reward?.emoji ?? "🎁"} {p.reward ? localizedRewardName(p.reward, lang) : "Reward"}
+                  {p.reward?.emoji ?? "🎁"}{" "}
+                  {p.reward ? localizedRewardName(p.reward, lang) : "Reward"}
                 </div>
                 <span
                   className={`rounded-full px-2 py-0.5 text-xs font-extrabold ${

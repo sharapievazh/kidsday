@@ -6,7 +6,6 @@ import { lovable } from "@/integrations/lovable";
 import { lookupKidEmailByPinFn } from "@/lib/kids.functions";
 import { LanguageToggle, useT } from "@/lib/i18n";
 
-
 export const Route = createFileRoute("/auth")({
   ssr: false,
   beforeLoad: async () => {
@@ -92,7 +91,6 @@ function AuthPage() {
       setBusy(false);
     }
   };
-
 
   return (
     <div className="flex min-h-screen items-center justify-center px-5 py-10">
@@ -238,12 +236,10 @@ function AuthPage() {
             </button>
           </p>
         )}
-
       </div>
     </div>
   );
 }
-
 
 function GoogleIcon() {
   return (

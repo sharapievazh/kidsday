@@ -1,9 +1,4 @@
-import {
-  useQuery,
-  useMutation,
-  useQueryClient,
-  type UseQueryResult,
-} from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient, type UseQueryResult } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { toast } from "sonner";
@@ -59,7 +54,6 @@ export function categoryToken(cat: Category): string {
   return map[cat];
 }
 
-
 // ============== TYPES ==============
 
 export type Profile = {
@@ -74,7 +68,6 @@ export type Profile = {
   streak_last_date: string | null;
   pin_code: string | null;
 };
-
 
 export type ScheduleType = "school_days" | "holidays" | "always";
 
@@ -452,34 +445,99 @@ export function useMarkDelivered() {
 
 // ============== HELPERS ==============
 
-export function coinsFor(
-  kidId: string,
-  completions: Completion[],
-  purchases: Purchase[],
-): number {
+export function coinsFor(kidId: string, completions: Completion[], purchases: Purchase[]): number {
   const earned = completions
     .filter((c) => c.kid_id === kidId)
     .reduce((s, c) => s + (c.coins_awarded ?? 0), 0);
-  const spent = purchases
-    .filter((p) => p.kid_id === kidId)
-    .reduce((s, p) => s + p.cost, 0);
+  const spent = purchases.filter((p) => p.kid_id === kidId).reduce((s, p) => s + p.cost, 0);
   return earned - spent;
 }
 
 // ============== SEED INITIAL DATA ==============
 
 const INITIAL_TASKS_TEMPLATE: Array<Omit<Task, "id" | "parent_id" | "assignee_id">> = [
-  { title: "Early wake-up (6–7 AM)", title_ru: "Ранний подъём (6–7 утра)", category: "Hygiene", coins: 10, frequency: "daily", days_of_week: [1,2,3,4,5,6,7], schedule_type: "always" },
-  { title: "Workout or morning exercise", title_ru: "Тренировка или зарядка", category: "Sports", coins: 10, frequency: "daily", days_of_week: [1,2,3,4,5,6,7], schedule_type: "always" },
-  { title: "Book notes / summary of today's reading", title_ru: "Конспект прочитанного за день", category: "Reading", coins: 15, frequency: "daily", days_of_week: [1,2,3,4,5,6,7], schedule_type: "always" },
-  { title: "Home responsibility (chore around the house)", title_ru: "Домашняя обязанность", category: "Chores", coins: 10, frequency: "daily", days_of_week: [1,2,3,4,5,6,7], schedule_type: "always" },
-  { title: "Creative project (make something by hand)", title_ru: "Творческий проект своими руками", category: "Creative", coins: 15, frequency: "daily", days_of_week: [1,2,3,4,5,6,7], schedule_type: "always" },
-  { title: "Brush teeth (morning)", title_ru: "Почистить зубы (утро)", category: "Hygiene", coins: 5, frequency: "daily", days_of_week: [1,2,3,4,5,6,7], schedule_type: "always" },
-  { title: "Make the bed", title_ru: "Заправить кровать", category: "Chores", coins: 5, frequency: "daily", days_of_week: [1,2,3,4,5,6,7], schedule_type: "always" },
-  { title: "Piano practice", title_ru: "Занятия на пианино", category: "Piano", coins: 15, frequency: "daily", days_of_week: [1,2,3,4,5], schedule_type: "school_days" },
-  { title: "Chess puzzle", title_ru: "Шахматная задача", category: "Chess", coins: 10, frequency: "daily", days_of_week: [1,2,3,4,5,6,7], schedule_type: "always" },
+  {
+    title: "Early wake-up (6–7 AM)",
+    title_ru: "Ранний подъём (6–7 утра)",
+    category: "Hygiene",
+    coins: 10,
+    frequency: "daily",
+    days_of_week: [1, 2, 3, 4, 5, 6, 7],
+    schedule_type: "always",
+  },
+  {
+    title: "Workout or morning exercise",
+    title_ru: "Тренировка или зарядка",
+    category: "Sports",
+    coins: 10,
+    frequency: "daily",
+    days_of_week: [1, 2, 3, 4, 5, 6, 7],
+    schedule_type: "always",
+  },
+  {
+    title: "Book notes / summary of today's reading",
+    title_ru: "Конспект прочитанного за день",
+    category: "Reading",
+    coins: 15,
+    frequency: "daily",
+    days_of_week: [1, 2, 3, 4, 5, 6, 7],
+    schedule_type: "always",
+  },
+  {
+    title: "Home responsibility (chore around the house)",
+    title_ru: "Домашняя обязанность",
+    category: "Chores",
+    coins: 10,
+    frequency: "daily",
+    days_of_week: [1, 2, 3, 4, 5, 6, 7],
+    schedule_type: "always",
+  },
+  {
+    title: "Creative project (make something by hand)",
+    title_ru: "Творческий проект своими руками",
+    category: "Creative",
+    coins: 15,
+    frequency: "daily",
+    days_of_week: [1, 2, 3, 4, 5, 6, 7],
+    schedule_type: "always",
+  },
+  {
+    title: "Brush teeth (morning)",
+    title_ru: "Почистить зубы (утро)",
+    category: "Hygiene",
+    coins: 5,
+    frequency: "daily",
+    days_of_week: [1, 2, 3, 4, 5, 6, 7],
+    schedule_type: "always",
+  },
+  {
+    title: "Make the bed",
+    title_ru: "Заправить кровать",
+    category: "Chores",
+    coins: 5,
+    frequency: "daily",
+    days_of_week: [1, 2, 3, 4, 5, 6, 7],
+    schedule_type: "always",
+  },
+  {
+    title: "Piano practice",
+    title_ru: "Занятия на пианино",
+    category: "Piano",
+    coins: 15,
+    frequency: "daily",
+    days_of_week: [1, 2, 3, 4, 5],
+    schedule_type: "school_days",
+  },
+  {
+    title: "Chess puzzle",
+    title_ru: "Шахматная задача",
+    category: "Chess",
+    coins: 10,
+    frequency: "daily",
+    days_of_week: [1, 2, 3, 4, 5, 6, 7],
+    schedule_type: "always",
+  },
 ];
-
 
 const INITIAL_REWARDS = [
   { name: "30 min extra screen time", name_ru: "30 мин экранного времени", emoji: "📱", cost: 50 },
@@ -496,10 +554,10 @@ const INITIAL_REWARDS = [
 const TITLE_RU_FALLBACK: Record<string, string> = {
   "Brush Teeth": "Почистить зубы",
   "Brush teeth (morning)": "Почистить зубы (утро)",
-  "Book": "Книга",
-  "Dancing": "Танцы",
+  Book: "Книга",
+  Dancing: "Танцы",
   "bed, table and dish": "Кровать, стол и посуда",
-  "Homework": "Домашнее задание",
+  Homework: "Домашнее задание",
   "Make the bed": "Заправить кровать",
   "Piano practice": "Занятия на пианино",
   "Chess puzzle": "Шахматная задача",
@@ -636,9 +694,11 @@ export function useFamilyCompletionsRealtime(kidIds: string[]) {
         "postgres_changes",
         { event: "*", schema: "public", table: "task_completions" },
         (payload) => {
-          const row = (payload.new ?? payload.old) as
-            | { kid_id?: string; task_id?: string; coins_awarded?: number }
-            | null;
+          const row = (payload.new ?? payload.old) as {
+            kid_id?: string;
+            task_id?: string;
+            coins_awarded?: number;
+          } | null;
           if (!row?.kid_id || !kidIds.includes(row.kid_id)) return;
           qc.invalidateQueries({ queryKey: ["completions-all"] });
           qc.invalidateQueries({ queryKey: ["completions-today"] });
@@ -654,7 +714,10 @@ export function useFamilyCompletionsRealtime(kidIds: string[]) {
             const kid = kids.find((k) => k.id === row.kid_id);
             const task = tasks.find((t) => t.id === row.task_id);
             const kidLabel = kid ? `${kid.emoji ?? "🙂"} ${kid.name}` : "Kid";
-            const lang = (typeof window !== "undefined" && (localStorage.getItem("kidsday.lang") as "en" | "ru" | null)) || "en";
+            const lang =
+              (typeof window !== "undefined" &&
+                (localStorage.getItem("kidsday.lang") as "en" | "ru" | null)) ||
+              "en";
             const title = task ? localizedTaskTitle(task, lang) : "a quest";
             const taskLabel = task ? `${CATEGORY_EMOJI[task.category]} ${title}` : "a quest";
             toast.success(`${kidLabel} completed ${taskLabel}`, {
@@ -716,13 +779,18 @@ export function useDisputeCompletion() {
   });
 }
 
-
 // ============== REWARD CRUD ==============
 
 export function useAddReward(parentId: string | undefined) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (r: { name: string; name_ru?: string | null; emoji: string; cost: number; active?: boolean }) => {
+    mutationFn: async (r: {
+      name: string;
+      name_ru?: string | null;
+      emoji: string;
+      cost: number;
+      active?: boolean;
+    }) => {
       if (!parentId) throw new Error("No parent");
       const { error } = await supabase.from("rewards").insert({
         parent_id: parentId,

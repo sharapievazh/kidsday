@@ -14,7 +14,6 @@ import { RoleSwitcher } from "@/components/RoleSwitcher";
 import { AppGate } from "@/components/AppGate";
 import { LanguageProvider } from "@/lib/i18n";
 
-
 function NotFoundComponent() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
@@ -57,11 +56,20 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "apple-mobile-web-app-title", content: "Kids Day" },
       { name: "apple-mobile-web-app-status-bar-style", content: "default" },
       { title: "Kids Day — Daily Tasks for Kids" },
-      { name: "description", content: "Gamified daily task tracker for kids. Earn coins, build streaks, redeem rewards." },
+      {
+        name: "description",
+        content: "Gamified daily task tracker for kids. Earn coins, build streaks, redeem rewards.",
+      },
       { property: "og:title", content: "Kids Day — Daily Tasks for Kids" },
       { name: "twitter:title", content: "Kids Day — Daily Tasks for Kids" },
-      { property: "og:description", content: "Gamified daily task tracker for kids. Earn coins, build streaks, redeem rewards." },
-      { name: "twitter:description", content: "Gamified daily task tracker for kids. Earn coins, build streaks, redeem rewards." },
+      {
+        property: "og:description",
+        content: "Gamified daily task tracker for kids. Earn coins, build streaks, redeem rewards.",
+      },
+      {
+        name: "twitter:description",
+        content: "Gamified daily task tracker for kids. Earn coins, build streaks, redeem rewards.",
+      },
       { property: "og:image", content: "https://kidsday.lovable.app/icon-512.png" },
       { name: "twitter:image", content: "https://kidsday.lovable.app/icon-512.png" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -116,4 +124,3 @@ function RootComponent() {
     </QueryClientProvider>
   );
 }
-
