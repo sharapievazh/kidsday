@@ -559,13 +559,23 @@ function ParentPage() {
             </div>
 
             <label className="block">
-              <span className="text-xs font-bold text-muted-foreground">{tr("title")}</span>
+              <span className="text-xs font-bold text-muted-foreground">{tr("title")} (EN)</span>
               <input
                 value={form.title}
                 onChange={(e) => setForm({ ...form, title: e.target.value })}
                 placeholder="e.g. Brush teeth"
                 className="mt-1 w-full rounded-xl border-2 border-border bg-background px-3 py-2 font-bold outline-none focus:border-primary"
                 autoFocus
+              />
+            </label>
+
+            <label className="mt-3 block">
+              <span className="text-xs font-bold text-muted-foreground">{tr("title")} (RU)</span>
+              <input
+                value={form.title_ru}
+                onChange={(e) => setForm({ ...form, title_ru: e.target.value })}
+                placeholder="напр. Почистить зубы"
+                className="mt-1 w-full rounded-xl border-2 border-border bg-background px-3 py-2 font-bold outline-none focus:border-primary"
               />
             </label>
 
