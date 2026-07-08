@@ -226,12 +226,12 @@ function ParentPage() {
         <div className="mt-4 grid grid-cols-4 gap-1 rounded-full bg-muted p-1">
           {(
             [
-              { id: "tasks", label: "Tasks", badge: 0 },
-              { id: "family", label: "Family", badge: 0 },
-              { id: "review", label: "Review", badge: newReviewCount },
-              { id: "approvals", label: "Rewards", badge: pending.length },
+              { id: "tasks", label: t("tabTasks"), badge: 0 },
+              { id: "family", label: t("tabFamily"), badge: 0 },
+              { id: "review", label: t("tabReview"), badge: newReviewCount },
+              { id: "approvals", label: t("tabRewards"), badge: pending.length },
             ] as { id: ParentTab; label: string; badge: number }[]
-          ).map((t) => (
+          ).map((tab_) => (
             <button
               key={t.id}
               onClick={() => setTab(t.id)}
