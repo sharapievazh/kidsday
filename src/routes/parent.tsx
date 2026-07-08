@@ -127,6 +127,7 @@ function ParentPage() {
   const defaultAssignee = kids[0]?.id ?? "";
   const blank: FormState = {
     title: "",
+    title_ru: "",
     category: "Hygiene",
     assignee_id: defaultAssignee,
     coins: 5,
@@ -145,6 +146,7 @@ function ParentPage() {
   const openEdit = (t: Task) => {
     setForm({
       title: t.title,
+      title_ru: t.title_ru ?? "",
       category: t.category,
       assignee_id: t.assignee_id,
       coins: t.coins,
