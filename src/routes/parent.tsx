@@ -981,33 +981,60 @@ function ParentPage() {
               />
             </label>
 
+            <button
+              type="button"
+              onClick={() =>
+                setRewardForm({
+                  name: "Money",
+                  name_ru: "Деньги",
+                  emoji: "💵",
+                  cost: 0,
+                  active: true,
+                })
+              }
+              className="mt-3 w-full rounded-xl border-2 border-dashed border-primary/40 bg-primary/5 px-3 py-2 text-left"
+            >
+              <div className="text-sm font-extrabold">{tr("moneyPreset")}</div>
+              <div className="mt-0.5 text-xs text-muted-foreground">{tr("moneyPresetHint")}</div>
+            </button>
+
             <label className="mt-3 block">
               <span className="text-xs font-bold text-muted-foreground">{tr("rewardEmoji")}</span>
               <div className="mt-1 flex flex-wrap gap-1.5">
-                {["🎁", "🍦", "🍕", "📱", "🎬", "🌙", "🧸", "🛝", "🎮", "🍭", "🎨", "⚽"].map(
-                  (e) => (
-                    <button
-                      type="button"
-                      key={e}
-                      onClick={() => setRewardForm({ ...rewardForm, emoji: e })}
-                      className={`h-10 w-10 rounded-xl text-xl ${
-                        rewardForm.emoji === e ? "bg-primary/20 ring-2 ring-primary" : "bg-muted"
-                      }`}
-                    >
-                      {e}
-                    </button>
-                  ),
-                )}
+                {[
+                  "🎁", "🍦", "🍕", "📱", "🎬", "🌙", "🧸", "🛝", "🎮", "🍭",
+                  "🎨", "⚽", "💵", "💰", "💸", "🤑", "🏆", "🥇", "🎯", "🎟️",
+                  "🎪", "🎢", "🎡", "🎠", "🎳", "🏊", "🚴", "🛼", "🛹", "🏓",
+                  "🎾", "🏀", "🏈", "⚾", "🏐", "🎸", "🎹", "🥁", "🎤", "🎧",
+                  "📚", "✏️", "🖍️", "🧩", "🪁", "🪀", "🎲", "♟️", "🎰", "🃏",
+                  "🍔", "🍟", "🌭", "🍿", "🍩", "🍪", "🎂", "🍰", "🧁", "🍫",
+                  "🍬", "🍡", "🍨", "🍧", "🍇", "🍓", "🍎", "🍌", "🍉", "🥑",
+                  "🚲", "🛴", "🏕️", "🏖️", "🎢", "🎆", "🎇", "🌠", "🦸", "🦄",
+                ].map((e) => (
+                  <button
+                    type="button"
+                    key={e}
+                    onClick={() => setRewardForm({ ...rewardForm, emoji: e })}
+                    className={`h-10 w-10 rounded-xl text-xl ${
+                      rewardForm.emoji === e ? "bg-primary/20 ring-2 ring-primary" : "bg-muted"
+                    }`}
+                  >
+                    {e}
+                  </button>
+                ))}
               </div>
             </label>
 
             <label className="mt-3 block">
               <span className="text-xs font-bold text-muted-foreground">
-                {tr("cost")}: <span className="text-coin">🪙 {rewardForm.cost}</span>
+                {tr("cost")}:{" "}
+                <span className="text-coin">
+                  🪙 {rewardForm.cost === 0 ? tr("allCoins") : rewardForm.cost}
+                </span>
               </span>
               <input
                 type="range"
-                min={5}
+                min={0}
                 max={500}
                 step={5}
                 value={rewardForm.cost}
