@@ -37,7 +37,6 @@ import {
   type Task,
   localizedTaskTitle,
   localizedRewardName,
-  rewardDisplayLabel,
   isMoneyReward,
   rewardRubles,
   MONEY_EMOJI,
