@@ -216,7 +216,15 @@ function ParentPage() {
   const filtered = tasks.filter((t) => filter === "all" || t.assignee_id === filter);
   const pending = purchases.filter((p) => !p.delivered);
   const loading = profileQ.isLoading || kidsQ.isLoading || tasksQ.isLoading;
-  const kidById = Object.fromEntries(kids.map((k) => [k.id, k] as const));
+  const kidById: Record<string, { name: string; emoji: string | null }> = Object.fromEntries(
+    kids.map((k) => [k.id, { name: k.name, emoji: k.emoji }] as const),
+  );
+  if (profileQ.data) {
+    kidById[profileQ.data.id] = {
+      name: tr("myself"),
+      emoji: profileQ.data.emoji ?? "👤",
+    };
+  }
 
   return (
     <div>
