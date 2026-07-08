@@ -274,7 +274,7 @@ function LoadingScreen() {
   return (
     <div className="flex min-h-[60vh] flex-col items-center justify-center gap-3 text-center">
       <img src="/favicon.png" alt="" className="h-12 w-12 animate-pulse rounded-2xl" />
-      <p className="text-sm font-bold text-muted-foreground">Loading…</p>
+      <p className="text-sm font-bold text-muted-foreground">{tr("loadingQuests")}</p>
     </div>
   );
 }
