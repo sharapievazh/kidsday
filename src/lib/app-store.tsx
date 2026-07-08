@@ -6,6 +6,7 @@ import {
 } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import type { Session } from "@supabase/supabase-js";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
 // ============== STATIC METADATA ==============
@@ -588,11 +589,29 @@ export function useFamilyCompletionsRealtime(kidIds: string[]) {
         "postgres_changes",
         { event: "*", schema: "public", table: "task_completions" },
         (payload) => {
-          const row = (payload.new ?? payload.old) as { kid_id?: string } | null;
+          const row = (payload.new ?? payload.old) as
+            | { kid_id?: string; task_id?: string; coins_awarded?: number }
+            | null;
           if (!row?.kid_id || !kidIds.includes(row.kid_id)) return;
           qc.invalidateQueries({ queryKey: ["completions-all"] });
           qc.invalidateQueries({ queryKey: ["completions-today"] });
           qc.invalidateQueries({ queryKey: ["review-feed"] });
+
+          if (payload.eventType === "INSERT" && row.task_id) {
+            const kids = qc
+              .getQueriesData<Profile[]>({ queryKey: ["kids"] })
+              .flatMap(([, data]) => data ?? []);
+            const tasks = qc
+              .getQueriesData<Task[]>({ queryKey: ["tasks"] })
+              .flatMap(([, data]) => data ?? []);
+            const kid = kids.find((k) => k.id === row.kid_id);
+            const task = tasks.find((t) => t.id === row.task_id);
+            const kidLabel = kid ? `${kid.emoji ?? "🙂"} ${kid.name}` : "Kid";
+            const taskLabel = task ? `${CATEGORY_EMOJI[task.category]} ${task.title}` : "a quest";
+            toast.success(`${kidLabel} completed ${taskLabel}`, {
+              description: `🪙 +${row.coins_awarded ?? task?.coins ?? 0}`,
+            });
+          }
         },
       )
       .subscribe();
