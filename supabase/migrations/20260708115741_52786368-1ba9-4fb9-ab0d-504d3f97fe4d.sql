@@ -1,0 +1,3 @@
+
+ALTER TABLE public.tasks ADD COLUMN IF NOT EXISTS title_ru TEXT;
+ALTER TABLE public.rewards ADD COLUMN IF NOT EXISTS name_ru TEXT;

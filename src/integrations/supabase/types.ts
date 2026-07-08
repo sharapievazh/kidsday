@@ -120,6 +120,7 @@ export type Database = {
           emoji: string | null
           id: string
           name: string
+          name_ru: string | null
           parent_id: string
           updated_at: string
         }
@@ -130,6 +131,7 @@ export type Database = {
           emoji?: string | null
           id?: string
           name: string
+          name_ru?: string | null
           parent_id: string
           updated_at?: string
         }
@@ -140,6 +142,7 @@ export type Database = {
           emoji?: string | null
           id?: string
           name?: string
+          name_ru?: string | null
           parent_id?: string
           updated_at?: string
         }
@@ -207,6 +210,7 @@ export type Database = {
           parent_id: string
           schedule_type: Database["public"]["Enums"]["schedule_type"]
           title: string
+          title_ru: string | null
           updated_at: string
         }
         Insert: {
@@ -220,6 +224,7 @@ export type Database = {
           parent_id: string
           schedule_type?: Database["public"]["Enums"]["schedule_type"]
           title: string
+          title_ru?: string | null
           updated_at?: string
         }
         Update: {
@@ -233,6 +238,7 @@ export type Database = {
           parent_id?: string
           schedule_type?: Database["public"]["Enums"]["schedule_type"]
           title?: string
+          title_ru?: string | null
           updated_at?: string
         }
         Relationships: [
