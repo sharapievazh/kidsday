@@ -88,6 +88,31 @@ function Index() {
             );
           })}
 
+        {!loading && parent && (
+          <button
+            onClick={() => navigate({ to: "/kid/$kidId", params: { kidId: parent.id } })}
+            className="flex w-full items-center gap-4 rounded-3xl border-2 border-border bg-card p-4 text-left transition-all hover:-translate-y-0.5 hover:border-primary"
+          >
+            <div
+              className="flex h-16 w-16 items-center justify-center rounded-2xl text-4xl"
+              style={{
+                backgroundColor: `color-mix(in oklab, ${parent.color ?? "var(--primary)"} 20%, white)`,
+              }}
+            >
+              {parent.emoji ?? "👤"}
+            </div>
+            <div className="flex-1">
+              <div className="text-xl font-extrabold">{t("myself")}</div>
+              <div className="text-sm font-bold text-muted-foreground">
+                🔥 {parent.streak_count} {t("dayStreak")} · 🪙{" "}
+                {coinsFor(parent.id, completionsQ.data ?? [], purchasesQ.data ?? [])}
+              </div>
+            </div>
+            <div className="text-2xl">→</div>
+          </button>
+        )}
+
+
         <Link
           to="/parent"
           className="mt-6 flex items-center gap-4 rounded-3xl border-2 border-dashed border-border bg-muted/40 p-4 transition-all hover:border-foreground/30"
