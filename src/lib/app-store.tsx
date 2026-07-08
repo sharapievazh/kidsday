@@ -583,7 +583,7 @@ export function useFamilyCompletionsRealtime(kidIds: string[]) {
   useEffect(() => {
     if (kidIds.length === 0) return;
     const channel = supabase
-      .channel("family-completions")
+      .channel(`family-completions:${key}:${Math.random().toString(36).slice(2, 8)}`)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "task_completions" },
@@ -591,6 +591,7 @@ export function useFamilyCompletionsRealtime(kidIds: string[]) {
           const row = (payload.new ?? payload.old) as { kid_id?: string } | null;
           if (!row?.kid_id || !kidIds.includes(row.kid_id)) return;
           qc.invalidateQueries({ queryKey: ["completions-all"] });
+          qc.invalidateQueries({ queryKey: ["completions-today"] });
           qc.invalidateQueries({ queryKey: ["review-feed"] });
         },
       )
