@@ -1126,7 +1126,7 @@ function ReviewPane({
 }: {
   items: import("@/lib/app-store").ReviewItem[];
   loading: boolean;
-  kidById: Record<string, import("@/lib/app-store").Profile>;
+  kidById: Record<string, { name: string; emoji: string | null }>;
   onDispute: (id: string) => void;
 }) {
   const tr = useT();
