@@ -64,6 +64,7 @@ type FormState = {
 };
 
 function ParentPage() {
+  const t = useT();
   const { session } = useSession();
   const profileQ = useParentProfile(!!session);
   const parentId = profileQ.data?.id;
