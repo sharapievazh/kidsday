@@ -22,11 +22,12 @@ export const Route = createFileRoute("/")({
 function Index() {
   const { session } = useSession();
   const profileQ = useParentProfile(!!session);
-  const kidsQ = useKids(profileQ.data?.id);
+  const parent = profileQ.data;
+  const kidsQ = useKids(parent?.id);
   const kids = kidsQ.data ?? [];
-  const kidIds = kids.map((k) => k.id);
-  const completionsQ = useAllCompletions(kidIds);
-  const purchasesQ = usePurchases(kidIds);
+  const allIds = [...kids.map((k) => k.id), ...(parent ? [parent.id] : [])];
+  const completionsQ = useAllCompletions(allIds);
+  const purchasesQ = usePurchases(allIds);
   const navigate = useNavigate();
   const t = useT();
 
