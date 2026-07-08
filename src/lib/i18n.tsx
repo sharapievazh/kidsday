@@ -224,6 +224,8 @@ const DICT = {
     cost: "Стоимость (монеты)",
     active: "Активна",
     inactive: "Неактивна",
+    titleRequired: "Введите название (на английском или русском)",
+    nameRequired: "Введите название (на английском или русском)",
     cat_Hygiene: "Гигиена",
     cat_Chores: "Домашние дела",
     "cat_Self-Education": "Саморазвитие",
