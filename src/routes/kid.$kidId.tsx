@@ -52,7 +52,7 @@ function KidPage() {
   const purchasesQ = usePurchases([kidId]);
   const buy = useBuyReward();
 
-  const [tab, setTab] = useState<"tasks" | "rewards">("tasks");
+  const [tab, setTab] = useState<"tasks" | "rewards" | "progress">("tasks");
   const navigate = useNavigate();
 
   if (kidQ.isLoading || tasksQ.isLoading) {
