@@ -21,6 +21,7 @@ import {
   localizedRewardName,
 } from "@/lib/app-store";
 import { ProgressRing } from "@/components/ProgressRing";
+import { ProgressView } from "@/components/ProgressView";
 import { TaskItem } from "@/components/TaskItem";
 import { TopBar } from "@/components/RoleSwitcher";
 import { useLang, useT } from "@/lib/i18n";
@@ -51,7 +52,7 @@ function KidPage() {
   const purchasesQ = usePurchases([kidId]);
   const buy = useBuyReward();
 
-  const [tab, setTab] = useState<"tasks" | "rewards">("tasks");
+  const [tab, setTab] = useState<"tasks" | "rewards" | "progress">("tasks");
   const navigate = useNavigate();
 
   if (kidQ.isLoading || tasksQ.isLoading) {
@@ -132,15 +133,19 @@ function KidPage() {
       </div>
 
       <div className="sticky top-[57px] z-20 mt-5 flex gap-2 border-b border-border bg-background/95 px-4 py-2 backdrop-blur">
-        {(["tasks", "rewards"] as const).map((t) => (
+        {(["tasks", "rewards", "progress"] as const).map((tk) => (
           <button
-            key={t}
-            onClick={() => setTab(t)}
+            key={tk}
+            onClick={() => setTab(tk)}
             className={`flex-1 rounded-full py-2 text-sm font-extrabold transition-all ${
-              tab === t ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+              tab === tk ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
             }`}
           >
-            {t === "tasks" ? tr("questsTab") : tr("rewardsTab")}
+            {tk === "tasks"
+              ? tr("questsTab")
+              : tk === "rewards"
+                ? tr("rewardsTab")
+                : tr("progressTab")}
           </button>
         ))}
       </div>
@@ -172,6 +177,8 @@ function KidPage() {
             <EmptyState emoji="✨" title={tr("noQuests")} hint={tr("noQuestsHint")} />
           )}
         </div>
+      ) : tab === "progress" ? (
+        <ProgressView profileId={kidId} parentId={parentId} />
       ) : (
         <div className="px-4 pt-4">
           <div className="mb-3 flex items-center justify-between">
