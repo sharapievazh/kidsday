@@ -21,6 +21,7 @@ import {
   localizedRewardName,
 } from "@/lib/app-store";
 import { ProgressRing } from "@/components/ProgressRing";
+import { ProgressView } from "@/components/ProgressView";
 import { TaskItem } from "@/components/TaskItem";
 import { TopBar } from "@/components/RoleSwitcher";
 import { useLang, useT } from "@/lib/i18n";
