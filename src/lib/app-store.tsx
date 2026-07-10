@@ -620,27 +620,6 @@ export function useSeedFamilyIfEmpty(parent: Profile | null | undefined) {
         await supabase.from("rewards").insert(rewardRows);
       }
 
-      const { data: kids } = await supabase
-        .from("profiles")
-        .select("id")
-        .eq("parent_id", parent.id)
-        .eq("role", "kid");
-      const { data: tasks } = await supabase
-        .from("tasks")
-        .select("id")
-        .eq("parent_id", parent.id)
-        .limit(1);
-      if (kids && kids.length > 0 && (!tasks || tasks.length === 0)) {
-        const taskRows = kids.flatMap((k) =>
-          INITIAL_TASKS_TEMPLATE.map((t) => ({
-            ...t,
-            parent_id: parent.id,
-            assignee_id: k.id,
-          })),
-        );
-        if (taskRows.length) await supabase.from("tasks").insert(taskRows);
-      }
-
       qc.invalidateQueries();
     })();
     return () => {
