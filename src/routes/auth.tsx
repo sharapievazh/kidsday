@@ -138,6 +138,10 @@ function AuthPage() {
           </button>
         </div>
 
+        <p className="mt-3 text-center text-xs font-bold text-muted-foreground">
+          {t("roleHint")}
+        </p>
+
         {mode !== "kid" && (
           <>
             <button
