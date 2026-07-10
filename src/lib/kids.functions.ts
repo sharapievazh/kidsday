@@ -116,6 +116,19 @@ export const createKidFn = createServerFn({ method: "POST" })
       await supabaseAdmin.auth.admin.deleteUser(created.user.id);
       throw new Error(insErr.message);
     }
+
+    // Seed starter tasks for this kid (per-kid, not per-family).
+    const taskRows = INITIAL_KID_TASKS.map((t) => ({
+      ...t,
+      parent_id: parentProfile.id,
+      assignee_id: profile.id,
+    }));
+    const { error: seedErr } = await supabaseAdmin.from("tasks").insert(taskRows);
+    if (seedErr) {
+      // Non-fatal: kid was created successfully; log and continue.
+      console.error("[createKidFn] failed to seed starter tasks", seedErr);
+    }
+
     return { profile };
   });
 
