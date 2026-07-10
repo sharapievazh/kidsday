@@ -11,6 +11,8 @@ const DICT = {
     enterPin: "Enter your 6-digit PIN.",
     signInToManage: "Sign in to manage Kids Day.",
     parentAccount: "Parent account — kids get their own PIN inside.",
+    parentRoleHint: "👤 Parent — manages the whole family. 🧒 Kid — ask your parent for your PIN.",
+    kidRoleHint: "👤 Parent — manages the whole family. 🧒 Kid — ask your parent for your PIN.",
     parent: "Parent",
     myself: "Me",
     myselfHint: "My own habits",
