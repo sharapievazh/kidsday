@@ -462,89 +462,11 @@ export function coinsFor(kidId: string, completions: Completion[], purchases: Pu
 
 // ============== SEED INITIAL DATA ==============
 
-const INITIAL_TASKS_TEMPLATE: Array<Omit<Task, "id" | "parent_id" | "assignee_id">> = [
-  {
-    title: "Early wake-up (6–7 AM)",
-    title_ru: "Ранний подъём (6–7 утра)",
-    category: "Hygiene",
-    coins: 10,
-    frequency: "daily",
-    days_of_week: [1, 2, 3, 4, 5, 6, 7],
-    schedule_type: "always",
-  },
-  {
-    title: "Workout or morning exercise",
-    title_ru: "Тренировка или зарядка",
-    category: "Sports",
-    coins: 10,
-    frequency: "daily",
-    days_of_week: [1, 2, 3, 4, 5, 6, 7],
-    schedule_type: "always",
-  },
-  {
-    title: "Book notes / summary of today's reading",
-    title_ru: "Конспект прочитанного за день",
-    category: "Reading",
-    coins: 15,
-    frequency: "daily",
-    days_of_week: [1, 2, 3, 4, 5, 6, 7],
-    schedule_type: "always",
-  },
-  {
-    title: "Home responsibility (chore around the house)",
-    title_ru: "Домашняя обязанность",
-    category: "Chores",
-    coins: 10,
-    frequency: "daily",
-    days_of_week: [1, 2, 3, 4, 5, 6, 7],
-    schedule_type: "always",
-  },
-  {
-    title: "Creative project (make something by hand)",
-    title_ru: "Творческий проект своими руками",
-    category: "Creative",
-    coins: 15,
-    frequency: "daily",
-    days_of_week: [1, 2, 3, 4, 5, 6, 7],
-    schedule_type: "always",
-  },
-  {
-    title: "Brush teeth (morning)",
-    title_ru: "Почистить зубы (утро)",
-    category: "Hygiene",
-    coins: 5,
-    frequency: "daily",
-    days_of_week: [1, 2, 3, 4, 5, 6, 7],
-    schedule_type: "always",
-  },
-  {
-    title: "Make the bed",
-    title_ru: "Заправить кровать",
-    category: "Chores",
-    coins: 5,
-    frequency: "daily",
-    days_of_week: [1, 2, 3, 4, 5, 6, 7],
-    schedule_type: "always",
-  },
-  {
-    title: "Piano practice",
-    title_ru: "Занятия на пианино",
-    category: "Piano",
-    coins: 15,
-    frequency: "daily",
-    days_of_week: [1, 2, 3, 4, 5],
-    schedule_type: "school_days",
-  },
-  {
-    title: "Chess puzzle",
-    title_ru: "Шахматная задача",
-    category: "Chess",
-    coins: 10,
-    frequency: "daily",
-    days_of_week: [1, 2, 3, 4, 5, 6, 7],
-    schedule_type: "always",
-  },
-];
+// Starter tasks are now seeded per-kid inside createKidFn
+// (see src/lib/kids.functions.ts). This keeps every newly added kid getting
+// the same starter set, even when other kids in the family already have tasks.
+
+
 
 const INITIAL_REWARDS = [
   { name: "30 min extra screen time", name_ru: "30 мин экранного времени", emoji: "📱", cost: 50 },
