@@ -157,6 +157,7 @@ const DICT = {
     enterPin: "Введите 6-значный PIN.",
     signInToManage: "Войдите, чтобы управлять Kids Day.",
     parentAccount: "Аккаунт родителя — у детей будет свой PIN.",
+    roleHint: "👤 Родитель — управляет всей семьёй. 🧒 Ребёнку — нужен PIN от родителя.",
     parent: "Родитель",
     myself: "Я",
     myselfHint: "Мои привычки",
