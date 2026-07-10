@@ -4,6 +4,64 @@ import { z } from "zod";
 
 const KID_EMAIL_DOMAIN = "kidsday.app";
 
+// Starter tasks seeded for every newly created kid. Parent can edit/delete
+// or add more later via Parent Dashboard.
+const INITIAL_KID_TASKS: Array<{
+  title: string;
+  title_ru: string;
+  category: "Hygiene" | "Chores" | "Self-Education" | "Reading" | "Piano" | "Chess" | "Sports" | "Creative";
+  coins: number;
+  frequency: "daily" | "weekly";
+  days_of_week: number[];
+  schedule_type: "school_days" | "holidays" | "always";
+}> = [
+  {
+    title: "Early wake-up (6–7 AM)",
+    title_ru: "Ранний подъём (6–7 утра)",
+    category: "Hygiene",
+    coins: 10,
+    frequency: "daily",
+    days_of_week: [1, 2, 3, 4, 5, 6, 7],
+    schedule_type: "always",
+  },
+  {
+    title: "Workout or morning exercise",
+    title_ru: "Тренировка или зарядка",
+    category: "Sports",
+    coins: 10,
+    frequency: "daily",
+    days_of_week: [1, 2, 3, 4, 5, 6, 7],
+    schedule_type: "always",
+  },
+  {
+    title: "Book notes / summary of today's reading",
+    title_ru: "Конспект прочитанного за день",
+    category: "Reading",
+    coins: 15,
+    frequency: "daily",
+    days_of_week: [1, 2, 3, 4, 5, 6, 7],
+    schedule_type: "always",
+  },
+  {
+    title: "Home responsibility (chore around the house)",
+    title_ru: "Домашняя обязанность",
+    category: "Chores",
+    coins: 10,
+    frequency: "daily",
+    days_of_week: [1, 2, 3, 4, 5, 6, 7],
+    schedule_type: "always",
+  },
+  {
+    title: "Creative project (make something by hand)",
+    title_ru: "Творческий проект своими руками",
+    category: "Creative",
+    coins: 15,
+    frequency: "daily",
+    days_of_week: [1, 2, 3, 4, 5, 6, 7],
+    schedule_type: "always",
+  },
+];
+
 const createKidSchema = z.object({
   name: z.string().min(1).max(60),
   emoji: z.string().min(1).max(8).default("🙂"),
