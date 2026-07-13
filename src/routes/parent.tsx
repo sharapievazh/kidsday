@@ -1175,9 +1175,7 @@ function FamilyPane({
               <div className="truncate font-extrabold">{k.name}</div>
               <div className="mt-0.5 flex items-center gap-2 text-xs font-bold text-muted-foreground">
                 <KeyRound className="h-3 w-3" />
-                <span className="font-mono tracking-[0.3em] text-foreground">
-                  {k.pin_code ?? "— —"}
-                </span>
+                <span className="font-mono tracking-[0.2em] text-foreground">••••••</span>
                 <span>🔥 {k.streak_count}</span>
               </div>
             </div>
