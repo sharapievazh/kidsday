@@ -9,7 +9,15 @@ const KID_EMAIL_DOMAIN = "kidsday.app";
 const INITIAL_KID_TASKS: Array<{
   title: string;
   title_ru: string;
-  category: "Hygiene" | "Chores" | "Self-Education" | "Reading" | "Piano" | "Chess" | "Sports" | "Creative";
+  category:
+    | "Hygiene"
+    | "Chores"
+    | "Self-Education"
+    | "Reading"
+    | "Piano"
+    | "Chess"
+    | "Sports"
+    | "Creative";
   coins: number;
   frequency: "daily" | "weekly";
   days_of_week: number[];
@@ -83,10 +91,10 @@ export const createKidFn = createServerFn({ method: "POST" })
     if (pErr) throw new Error(pErr.message);
     if (!parentProfile) throw new Error("Parent profile not found");
 
-    // Ensure PIN unique
+    // Ensure PIN unique (check the private kid_secrets table).
     const { data: existing } = await supabaseAdmin
-      .from("profiles")
-      .select("id")
+      .from("kid_secrets" as never)
+      .select("profile_id")
       .eq("pin_code", data.pin)
       .maybeSingle();
     if (existing) throw new Error("PIN already in use, pick another");
@@ -108,13 +116,20 @@ export const createKidFn = createServerFn({ method: "POST" })
         role: "kid",
         name: data.name,
         emoji: data.emoji,
-        pin_code: data.pin,
       })
       .select("*")
       .single();
     if (insErr) {
       await supabaseAdmin.auth.admin.deleteUser(created.user.id);
       throw new Error(insErr.message);
+    }
+
+    const { error: secErr } = await supabaseAdmin
+      .from("kid_secrets" as never)
+      .insert({ profile_id: profile.id, pin_code: data.pin });
+    if (secErr) {
+      await supabaseAdmin.auth.admin.deleteUser(created.user.id);
+      throw new Error(secErr.message);
     }
 
     // Seed starter tasks for this kid (per-kid, not per-family).
@@ -148,6 +163,7 @@ export const deleteKidFn = createServerFn({ method: "POST" })
     if (kid.user_id) {
       await supabaseAdmin.auth.admin.deleteUser(kid.user_id);
     }
+    // kid_secrets row is removed by ON DELETE CASCADE on profile deletion.
     const { error } = await supabaseAdmin.from("profiles").delete().eq("id", data.kidId);
     if (error) throw new Error(error.message);
     return { ok: true };
@@ -171,10 +187,10 @@ export const regenerateKidPinFn = createServerFn({ method: "POST" })
     if (!kid || !kid.user_id) throw new Error("Kid not found");
 
     const { data: dup } = await supabaseAdmin
-      .from("profiles")
-      .select("id")
+      .from("kid_secrets" as never)
+      .select("profile_id")
       .eq("pin_code", data.pin)
-      .neq("id", data.kidId)
+      .neq("profile_id", data.kidId)
       .maybeSingle();
     if (dup) throw new Error("PIN already in use");
 
@@ -183,9 +199,8 @@ export const regenerateKidPinFn = createServerFn({ method: "POST" })
     });
     if (aErr) throw new Error(aErr.message);
     const { error: uErr } = await supabaseAdmin
-      .from("profiles")
-      .update({ pin_code: data.pin })
-      .eq("id", data.kidId);
+      .from("kid_secrets" as never)
+      .upsert({ profile_id: data.kidId, pin_code: data.pin }, { onConflict: "profile_id" });
     if (uErr) throw new Error(uErr.message);
     return { ok: true };
   });
@@ -198,13 +213,21 @@ export const lookupKidEmailByPinFn = createServerFn({ method: "POST" })
   .inputValidator((data: unknown) => pinLookupSchema.parse(data))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: profile, error } = await supabaseAdmin
-      .from("profiles")
-      .select("user_id, name")
+    const { data: secret, error } = await supabaseAdmin
+      .from("kid_secrets" as never)
+      .select("profile_id")
       .eq("pin_code", data.pin)
-      .eq("role", "kid")
       .maybeSingle();
     if (error) throw new Error(error.message);
+    const profileId = (secret as { profile_id?: string } | null)?.profile_id;
+    if (!profileId) throw new Error("Invalid PIN");
+    const { data: profile, error: pErr } = await supabaseAdmin
+      .from("profiles")
+      .select("user_id, name, role")
+      .eq("id", profileId)
+      .eq("role", "kid")
+      .maybeSingle();
+    if (pErr) throw new Error(pErr.message);
     if (!profile?.user_id) throw new Error("Invalid PIN");
     const { data: userRes, error: uErr } = await supabaseAdmin.auth.admin.getUserById(
       profile.user_id,
