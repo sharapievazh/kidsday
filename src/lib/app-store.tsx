@@ -212,13 +212,13 @@ export function useKids(parentId: string | undefined) {
     enabled: !!parentId,
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("profiles")
+        .from("profiles_safe" as never)
         .select("*")
         .eq("parent_id", parentId!)
         .eq("role", "kid")
         .order("created_at", { ascending: true });
       if (error) throw error;
-      return (data ?? []) as Profile[];
+      return (data ?? []) as unknown as Profile[];
     },
   });
 }
