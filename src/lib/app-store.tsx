@@ -66,7 +66,7 @@ export type Profile = {
   color: string | null;
   streak_count: number;
   streak_last_date: string | null;
-  pin_code: string | null;
+  
 };
 
 export type ScheduleType = "school_days" | "holidays" | "always";

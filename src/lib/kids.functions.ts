@@ -126,7 +126,7 @@ export const createKidFn = createServerFn({ method: "POST" })
 
     const { error: secErr } = await supabaseAdmin
       .from("kid_secrets" as never)
-      .insert({ profile_id: profile.id, pin_code: data.pin });
+      .insert({ profile_id: profile.id, pin_code: data.pin } as never);
     if (secErr) {
       await supabaseAdmin.auth.admin.deleteUser(created.user.id);
       throw new Error(secErr.message);
@@ -200,7 +200,9 @@ export const regenerateKidPinFn = createServerFn({ method: "POST" })
     if (aErr) throw new Error(aErr.message);
     const { error: uErr } = await supabaseAdmin
       .from("kid_secrets" as never)
-      .upsert({ profile_id: data.kidId, pin_code: data.pin }, { onConflict: "profile_id" });
+      .upsert({ profile_id: data.kidId, pin_code: data.pin } as never, {
+        onConflict: "profile_id",
+      });
     if (uErr) throw new Error(uErr.message);
     return { ok: true };
   });
