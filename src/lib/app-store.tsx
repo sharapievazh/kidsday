@@ -229,12 +229,12 @@ export function useKid(kidId: string | undefined) {
     enabled: !!kidId,
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("profiles")
+        .from("profiles_safe" as never)
         .select("*")
         .eq("id", kidId!)
         .maybeSingle();
       if (error) throw error;
-      return (data as Profile) ?? null;
+      return (data as unknown as Profile) ?? null;
     },
   });
 }
