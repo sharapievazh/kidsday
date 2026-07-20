@@ -193,13 +193,13 @@ export function useParentProfile(enabled: boolean): UseQueryResult<Profile | nul
       const uid = userData.user?.id;
       if (!uid) return null;
       const { data, error } = await supabase
-        .from("profiles")
+        .from("profiles_safe" as never)
         .select("*")
         .eq("user_id", uid)
         .eq("role", "parent")
         .maybeSingle();
       if (error) throw error;
-      return (data as Profile) ?? null;
+      return (data as unknown as Profile) ?? null;
     },
   });
 }
@@ -212,13 +212,13 @@ export function useKids(parentId: string | undefined) {
     enabled: !!parentId,
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("profiles")
+        .from("profiles_safe" as never)
         .select("*")
         .eq("parent_id", parentId!)
         .eq("role", "kid")
         .order("created_at", { ascending: true });
       if (error) throw error;
-      return (data ?? []) as Profile[];
+      return (data ?? []) as unknown as Profile[];
     },
   });
 }
@@ -229,12 +229,12 @@ export function useKid(kidId: string | undefined) {
     enabled: !!kidId,
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("profiles")
+        .from("profiles_safe" as never)
         .select("*")
         .eq("id", kidId!)
         .maybeSingle();
       if (error) throw error;
-      return (data as Profile) ?? null;
+      return (data as unknown as Profile) ?? null;
     },
   });
 }
