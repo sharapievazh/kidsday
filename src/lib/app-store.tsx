@@ -193,7 +193,7 @@ export function useParentProfile(enabled: boolean): UseQueryResult<Profile | nul
       const uid = userData.user?.id;
       if (!uid) return null;
       const { data, error } = await supabase
-        .from("profiles")
+        .from("profiles_safe" as never)
         .select("*")
         .eq("user_id", uid)
         .eq("role", "parent")
