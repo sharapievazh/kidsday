@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      kid_secrets: {
+        Row: {
+          created_at: string
+          pin_code: string
+          profile_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          pin_code: string
+          profile_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          pin_code?: string
+          profile_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kid_secrets_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "kid_secrets_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: true
+            referencedRelation: "profiles_safe"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           color: string | null
@@ -22,7 +58,6 @@ export type Database = {
           id: string
           name: string
           parent_id: string | null
-          pin_code: string | null
           role: Database["public"]["Enums"]["profile_role"]
           streak_count: number
           streak_last_date: string | null
@@ -36,7 +71,6 @@ export type Database = {
           id?: string
           name: string
           parent_id?: string | null
-          pin_code?: string | null
           role: Database["public"]["Enums"]["profile_role"]
           streak_count?: number
           streak_last_date?: string | null
@@ -50,7 +84,6 @@ export type Database = {
           id?: string
           name?: string
           parent_id?: string | null
-          pin_code?: string | null
           role?: Database["public"]["Enums"]["profile_role"]
           streak_count?: number
           streak_last_date?: string | null
