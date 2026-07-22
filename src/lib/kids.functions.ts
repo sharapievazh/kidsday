@@ -154,12 +154,27 @@ export const deleteKidFn = createServerFn({ method: "POST" })
   .inputValidator((data: unknown) => deleteKidSchema.parse(data))
   .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: kid } = await context.supabase
+
+    const { data: parentProfile, error: pErr } = await supabaseAdmin
       .from("profiles")
-      .select("id, user_id")
+      .select("id, role")
+      .eq("user_id", context.userId)
+      .maybeSingle();
+    if (pErr) throw new Error(pErr.message);
+    if (!parentProfile || parentProfile.role !== "parent") {
+      throw new Error("Forbidden: only a parent can delete a kid");
+    }
+
+    const { data: kid, error: kErr } = await supabaseAdmin
+      .from("profiles")
+      .select("id, user_id, role, parent_id")
       .eq("id", data.kidId)
       .maybeSingle();
-    if (!kid) throw new Error("Kid not found");
+    if (kErr) throw new Error(kErr.message);
+    if (!kid || kid.role !== "kid" || kid.parent_id !== parentProfile.id) {
+      throw new Error("Forbidden: not your kid");
+    }
+
     if (kid.user_id) {
       await supabaseAdmin.auth.admin.deleteUser(kid.user_id);
     }
@@ -179,12 +194,26 @@ export const regenerateKidPinFn = createServerFn({ method: "POST" })
   .inputValidator((data: unknown) => regenPinSchema.parse(data))
   .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: kid } = await context.supabase
+
+    const { data: parentProfile, error: pErr } = await supabaseAdmin
       .from("profiles")
-      .select("id, user_id, parent_id")
+      .select("id, role")
+      .eq("user_id", context.userId)
+      .maybeSingle();
+    if (pErr) throw new Error(pErr.message);
+    if (!parentProfile || parentProfile.role !== "parent") {
+      throw new Error("Forbidden: only a parent can regenerate a PIN");
+    }
+
+    const { data: kid, error: kErr } = await supabaseAdmin
+      .from("profiles")
+      .select("id, user_id, role, parent_id")
       .eq("id", data.kidId)
       .maybeSingle();
-    if (!kid || !kid.user_id) throw new Error("Kid not found");
+    if (kErr) throw new Error(kErr.message);
+    if (!kid || kid.role !== "kid" || kid.parent_id !== parentProfile.id || !kid.user_id) {
+      throw new Error("Forbidden: not your kid");
+    }
 
     const { data: dup } = await supabaseAdmin
       .from("kid_secrets" as never)
