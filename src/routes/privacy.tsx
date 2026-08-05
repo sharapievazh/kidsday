@@ -22,7 +22,7 @@ export const Route = createFileRoute("/privacy")({
   component: PrivacyPage,
 });
 
-const SUPPORT_EMAIL = "support@kidsday.app";
+const SUPPORT_EMAIL = "sharapieva@gmail.com";
 
 function PrivacyPage() {
   return (
