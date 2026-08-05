@@ -9,12 +9,18 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SupportRouteImport } from './routes/support'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ParentRouteImport } from './routes/parent'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as KidKidIdRouteImport } from './routes/kid.$kidId'
 
+const SupportRoute = SupportRouteImport.update({
+  id: '/support',
+  path: '/support',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PrivacyRoute = PrivacyRouteImport.update({
   id: '/privacy',
   path: '/privacy',
@@ -46,6 +52,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/parent': typeof ParentRoute
   '/privacy': typeof PrivacyRoute
+  '/support': typeof SupportRoute
   '/kid/$kidId': typeof KidKidIdRoute
 }
 export interface FileRoutesByTo {
@@ -53,6 +60,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/parent': typeof ParentRoute
   '/privacy': typeof PrivacyRoute
+  '/support': typeof SupportRoute
   '/kid/$kidId': typeof KidKidIdRoute
 }
 export interface FileRoutesById {
@@ -61,14 +69,22 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/parent': typeof ParentRoute
   '/privacy': typeof PrivacyRoute
+  '/support': typeof SupportRoute
   '/kid/$kidId': typeof KidKidIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/parent' | '/privacy' | '/kid/$kidId'
+  fullPaths: '/' | '/auth' | '/parent' | '/privacy' | '/support' | '/kid/$kidId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/parent' | '/privacy' | '/kid/$kidId'
-  id: '__root__' | '/' | '/auth' | '/parent' | '/privacy' | '/kid/$kidId'
+  to: '/' | '/auth' | '/parent' | '/privacy' | '/support' | '/kid/$kidId'
+  id:
+    | '__root__'
+    | '/'
+    | '/auth'
+    | '/parent'
+    | '/privacy'
+    | '/support'
+    | '/kid/$kidId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -76,11 +92,19 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   ParentRoute: typeof ParentRoute
   PrivacyRoute: typeof PrivacyRoute
+  SupportRoute: typeof SupportRoute
   KidKidIdRoute: typeof KidKidIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/support': {
+      id: '/support'
+      path: '/support'
+      fullPath: '/support'
+      preLoaderRoute: typeof SupportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/privacy': {
       id: '/privacy'
       path: '/privacy'
@@ -124,6 +148,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   ParentRoute: ParentRoute,
   PrivacyRoute: PrivacyRoute,
+  SupportRoute: SupportRoute,
   KidKidIdRoute: KidKidIdRoute,
 }
 export const routeTree = rootRouteImport

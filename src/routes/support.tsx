@@ -6,12 +6,14 @@ export const Route = createFileRoute("/support")({
       { title: "Поддержка — Kids Day" },
       {
         name: "description",
-        content: "Свяжитесь с поддержкой Kids Day по любым вопросам, багам или помощи с приложением.",
+        content:
+          "Свяжитесь с поддержкой Kids Day по любым вопросам, багам или помощи с приложением.",
       },
       { property: "og:title", content: "Поддержка — Kids Day" },
       {
         property: "og:description",
-        content: "Свяжитесь с поддержкой Kids Day по любым вопросам, багам или помощи с приложением.",
+        content:
+          "Свяжитесь с поддержкой Kids Day по любым вопросам, багам или помощи с приложением.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
