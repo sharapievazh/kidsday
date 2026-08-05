@@ -559,7 +559,10 @@ export function useCreateKid() {
       const { createKidFn } = await import("./kids.functions");
       return createKidFn({ data: vars });
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["kids"] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["kids"] });
+      qc.invalidateQueries({ queryKey: ["tasks"] });
+    },
   });
 }
 
