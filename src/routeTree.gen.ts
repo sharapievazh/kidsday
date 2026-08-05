@@ -9,11 +9,17 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ParentRouteImport } from './routes/parent'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as KidKidIdRouteImport } from './routes/kid.$kidId'
 
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ParentRoute = ParentRouteImport.update({
   id: '/parent',
   path: '/parent',
@@ -39,12 +45,14 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/parent': typeof ParentRoute
+  '/privacy': typeof PrivacyRoute
   '/kid/$kidId': typeof KidKidIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/parent': typeof ParentRoute
+  '/privacy': typeof PrivacyRoute
   '/kid/$kidId': typeof KidKidIdRoute
 }
 export interface FileRoutesById {
@@ -52,25 +60,34 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/parent': typeof ParentRoute
+  '/privacy': typeof PrivacyRoute
   '/kid/$kidId': typeof KidKidIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/parent' | '/kid/$kidId'
+  fullPaths: '/' | '/auth' | '/parent' | '/privacy' | '/kid/$kidId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/parent' | '/kid/$kidId'
-  id: '__root__' | '/' | '/auth' | '/parent' | '/kid/$kidId'
+  to: '/' | '/auth' | '/parent' | '/privacy' | '/kid/$kidId'
+  id: '__root__' | '/' | '/auth' | '/parent' | '/privacy' | '/kid/$kidId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRoute: typeof AuthRoute
   ParentRoute: typeof ParentRoute
+  PrivacyRoute: typeof PrivacyRoute
   KidKidIdRoute: typeof KidKidIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/parent': {
       id: '/parent'
       path: '/parent'
@@ -106,6 +123,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRoute,
   ParentRoute: ParentRoute,
+  PrivacyRoute: PrivacyRoute,
   KidKidIdRoute: KidKidIdRoute,
 }
 export const routeTree = rootRouteImport
