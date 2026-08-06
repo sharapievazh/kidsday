@@ -7,7 +7,8 @@ export function AppGate({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const onAuthPage = location.pathname === "/auth";
+  const PUBLIC_PATHS = ["/auth", "/privacy", "/support"];
+  const onAuthPage = PUBLIC_PATHS.includes(location.pathname);
   const hasSession = !!session;
 
   const profileQ = useParentProfile(hasSession);
