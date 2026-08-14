@@ -179,7 +179,6 @@ function AuthPage() {
                 value={pin}
                 onChange={(e) => setPin(e.target.value.replace(/\D/g, "").slice(0, 6))}
                 inputMode="numeric"
-                autoFocus
                 required
                 placeholder="••••••"
                 className="mt-1 w-full rounded-xl border-2 border-border bg-background px-3 py-3 text-center font-mono text-2xl font-extrabold tracking-[0.6em] outline-none focus:border-primary"
