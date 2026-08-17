@@ -172,20 +172,30 @@ function AuthPage() {
         </p>
 
         {mode !== "kid" && (
-          <>
-            <button
-              onClick={google}
-              disabled={busy}
-              className="mt-5 flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-border bg-card py-3 font-extrabold transition hover:-translate-y-0.5 disabled:opacity-50"
-            >
-              <GoogleIcon /> {t("continueWithGoogle")}
-            </button>
+          <button
+            onClick={google}
+            disabled={busy}
+            className="mt-5 flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-border bg-card py-3 font-extrabold transition hover:-translate-y-0.5 disabled:opacity-50"
+          >
+            <GoogleIcon /> {t("continueWithGoogle")}
+          </button>
+        )}
 
-            <div className="my-5 flex items-center gap-3 text-xs font-bold text-muted-foreground">
-              <span className="h-px flex-1 bg-border" /> {t("or")}{" "}
-              <span className="h-px flex-1 bg-border" />
-            </div>
-          </>
+        {mode !== "kid" && Capacitor.getPlatform() === "ios" && (
+          <button
+            onClick={apple}
+            disabled={busy}
+            className="mt-3 flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-border bg-black py-3 font-extrabold text-white transition hover:-translate-y-0.5 disabled:opacity-50"
+          >
+             Войти через Apple
+          </button>
+        )}
+
+        {mode !== "kid" && (
+          <div className="my-5 flex items-center gap-3 text-xs font-bold text-muted-foreground">
+            <span className="h-px flex-1 bg-border" /> {t("or")}{" "}
+            <span className="h-px flex-1 bg-border" />
+          </div>
         )}
 
         <form onSubmit={submit} className="mt-4 space-y-3">
