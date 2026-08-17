@@ -167,9 +167,7 @@ function AuthPage() {
           </button>
         </div>
 
-        <p className="mt-3 text-center text-xs font-bold text-muted-foreground">
-          {t("roleHint")}
-        </p>
+        <p className="mt-3 text-center text-xs font-bold text-muted-foreground">{t("roleHint")}</p>
 
         {mode !== "kid" && (
           <button
@@ -187,7 +185,7 @@ function AuthPage() {
             disabled={busy}
             className="mt-3 flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-border bg-black py-3 font-extrabold text-white transition hover:-translate-y-0.5 disabled:opacity-50"
           >
-             Войти через Apple
+            Войти через Apple
           </button>
         )}
 
