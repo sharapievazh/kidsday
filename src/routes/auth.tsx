@@ -94,6 +94,33 @@ function AuthPage() {
     }
   };
 
+  const apple = async () => {
+    setBusy(true);
+    try {
+      const result = await SignInWithApple.authorize({
+        clientId: "com.sharapievazh.kidsday",
+        redirectURI: window.location.origin,
+        scopes: "email name",
+      });
+      const { identityToken, givenName, familyName } = result.response;
+      const { error } = await supabase.auth.signInWithIdToken({
+        provider: "apple",
+        token: identityToken,
+      });
+      if (error) throw error;
+      const fullName = [givenName, familyName].filter(Boolean).join(" ");
+      if (fullName) {
+        await supabase.auth.updateUser({ data: { name: fullName } });
+      }
+      toast.success("Welcome!");
+      navigate({ to: "/" });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Apple sign-in failed");
+    } finally {
+      setBusy(false);
+    }
+  };
+
   return (
     <div className="flex min-h-screen items-center justify-center px-5 py-10">
       <div className="w-full max-w-sm">
