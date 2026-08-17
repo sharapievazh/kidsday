@@ -5,6 +5,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { lookupKidEmailByPinFn } from "@/lib/kids.functions";
 import { LanguageToggle, useT } from "@/lib/i18n";
+import { SignInWithApple } from "@capacitor-community/apple-sign-in";
+import { Capacitor } from "@capacitor/core";
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
@@ -92,6 +94,33 @@ function AuthPage() {
     }
   };
 
+  const apple = async () => {
+    setBusy(true);
+    try {
+      const result = await SignInWithApple.authorize({
+        clientId: "com.sharapievazh.kidsday",
+        redirectURI: window.location.origin,
+        scopes: "email name",
+      });
+      const { identityToken, givenName, familyName } = result.response;
+      const { error } = await supabase.auth.signInWithIdToken({
+        provider: "apple",
+        token: identityToken,
+      });
+      if (error) throw error;
+      const fullName = [givenName, familyName].filter(Boolean).join(" ");
+      if (fullName) {
+        await supabase.auth.updateUser({ data: { name: fullName } });
+      }
+      toast.success("Welcome!");
+      navigate({ to: "/" });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Apple sign-in failed");
+    } finally {
+      setBusy(false);
+    }
+  };
+
   return (
     <div className="flex min-h-screen items-center justify-center px-5 py-10">
       <div className="w-full max-w-sm">
@@ -138,25 +167,33 @@ function AuthPage() {
           </button>
         </div>
 
-        <p className="mt-3 text-center text-xs font-bold text-muted-foreground">
-          {t("roleHint")}
-        </p>
+        <p className="mt-3 text-center text-xs font-bold text-muted-foreground">{t("roleHint")}</p>
 
         {mode !== "kid" && (
-          <>
-            <button
-              onClick={google}
-              disabled={busy}
-              className="mt-5 flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-border bg-card py-3 font-extrabold transition hover:-translate-y-0.5 disabled:opacity-50"
-            >
-              <GoogleIcon /> {t("continueWithGoogle")}
-            </button>
+          <button
+            onClick={google}
+            disabled={busy}
+            className="mt-5 flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-border bg-card py-3 font-extrabold transition hover:-translate-y-0.5 disabled:opacity-50"
+          >
+            <GoogleIcon /> {t("continueWithGoogle")}
+          </button>
+        )}
 
-            <div className="my-5 flex items-center gap-3 text-xs font-bold text-muted-foreground">
-              <span className="h-px flex-1 bg-border" /> {t("or")}{" "}
-              <span className="h-px flex-1 bg-border" />
-            </div>
-          </>
+        {mode !== "kid" && Capacitor.getPlatform() === "ios" && (
+          <button
+            onClick={apple}
+            disabled={busy}
+            className="mt-3 flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-border bg-black py-3 font-extrabold text-white transition hover:-translate-y-0.5 disabled:opacity-50"
+          >
+            Войти через Apple
+          </button>
+        )}
+
+        {mode !== "kid" && (
+          <div className="my-5 flex items-center gap-3 text-xs font-bold text-muted-foreground">
+            <span className="h-px flex-1 bg-border" /> {t("or")}{" "}
+            <span className="h-px flex-1 bg-border" />
+          </div>
         )}
 
         <form onSubmit={submit} className="mt-4 space-y-3">
