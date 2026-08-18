@@ -1,7 +1,17 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import { Pencil, Plus, Trash2, X, UserPlus, RefreshCw, KeyRound, Gift } from "lucide-react";
+import {
+  Pencil,
+  Plus,
+  Trash2,
+  X,
+  UserPlus,
+  RefreshCw,
+  KeyRound,
+  Gift,
+  AlertTriangle,
+} from "lucide-react";
 
 import {
   CATEGORIES,
@@ -15,6 +25,7 @@ import {
   useAllCompletions,
   useCreateKid,
   useDeleteKid,
+  useDeleteParentAccount,
   useDeleteReward,
   useDeleteTask,
   useDisputeCompletion,
