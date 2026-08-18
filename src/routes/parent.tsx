@@ -228,6 +228,10 @@ function ParentPage() {
   const [showAddKid, setShowAddKid] = useState(false);
   const [newKid, setNewKid] = useState({ name: "", emoji: "🙂", pin: generateRandomPin() });
 
+  // Account deletion confirmation
+  const [showDeleteAccount, setShowDeleteAccount] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState("");
+
   const defaultAssignee = kids[0]?.id ?? "";
   const blank: FormState = {
     title: "",
