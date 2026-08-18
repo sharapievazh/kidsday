@@ -143,18 +143,10 @@ function AuthPage() {
         <div className="text-center">
           <img src="/favicon.png" alt="" className="mx-auto h-16 w-16 rounded-2xl shadow-lg" />
           <h1 className="mt-3 text-2xl font-extrabold">
-            {mode === "kid"
-              ? t("loginAsKidTitle")
-              : mode === "signin"
-                ? t("welcomeBack")
-                : t("createFamily")}
+            {mode === "kid" ? t("loginAsKidTitle") : t("continueTitle")}
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            {mode === "kid"
-              ? t("enterPin")
-              : mode === "signin"
-                ? t("signInToManage")
-                : t("parentAccount")}
+            {mode === "kid" ? t("enterPin") : otpSent ? t("enterCode") : t("appTagline")}
           </p>
         </div>
 
@@ -162,7 +154,7 @@ function AuthPage() {
         <div className="mt-5 grid grid-cols-2 gap-1 rounded-full bg-muted p-1">
           <button
             type="button"
-            onClick={() => setMode("signin")}
+            onClick={() => setMode("parent")}
             className={`rounded-full py-2 text-sm font-extrabold ${
               mode !== "kid" ? "bg-card shadow-sm" : "text-muted-foreground"
             }`}
