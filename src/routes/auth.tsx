@@ -23,54 +23,67 @@ export const Route = createFileRoute("/auth")({
   component: AuthPage,
 });
 
-type Mode = "signin" | "signup" | "kid";
+type Mode = "parent" | "kid";
 
 function AuthPage() {
   const navigate = useNavigate();
   const t = useT();
 
-  const [mode, setMode] = useState<Mode>("signin");
+  const [mode, setMode] = useState<Mode>("parent");
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [name, setName] = useState("");
   const [pin, setPin] = useState("");
   const [busy, setBusy] = useState(false);
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpCode, setOtpCode] = useState("");
 
-  const submit = async (e: React.FormEvent) => {
+  const sendCode = async (e: React.FormEvent) => {
     e.preventDefault();
     setBusy(true);
     try {
-      if (mode === "signup") {
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            emailRedirectTo: `${window.location.origin}/`,
-            data: { name: name || email.split("@")[0] },
-          },
-        });
-        if (error) throw error;
-        toast.success("Account created! You're signed in.");
-        navigate({ to: "/" });
-      } else if (mode === "signin") {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
-        toast.success("Welcome back!");
-        navigate({ to: "/" });
-      } else {
-        // kid mode
-        if (!/^\d{6}$/.test(pin)) throw new Error("Enter your 6-digit PIN");
-        const { email: kidEmail, name: kidName } = await lookupKidEmailByPinFn({
-          data: { pin },
-        });
-        const { error } = await supabase.auth.signInWithPassword({
-          email: kidEmail,
-          password: pin,
-        });
-        if (error) throw error;
-        toast.success(`Hi ${kidName}! 🎉`);
-        navigate({ to: "/" });
-      }
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: { shouldCreateUser: true },
+      });
+      if (error) throw error;
+      setOtpSent(true);
+      toast.success(t("codeSent"));
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to send code");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const verifyCode = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setBusy(true);
+    try {
+      const { error } = await supabase.auth.verifyOtp({ email, token: otpCode, type: "email" });
+      if (error) throw error;
+      toast.success(t("welcomeBack"));
+      navigate({ to: "/" });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Invalid code");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const kidSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setBusy(true);
+    try {
+      if (!/^\d{6}$/.test(pin)) throw new Error("Enter your 6-digit PIN");
+      const { email: kidEmail, name: kidName } = await lookupKidEmailByPinFn({
+        data: { pin },
+      });
+      const { error } = await supabase.auth.signInWithPassword({
+        email: kidEmail,
+        password: pin,
+      });
+      if (error) throw error;
+      toast.success(`Hi ${kidName}! 🎉`);
+      navigate({ to: "/" });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Authentication failed");
     } finally {
