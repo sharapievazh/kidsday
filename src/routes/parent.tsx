@@ -671,7 +671,25 @@ function ParentPage() {
           />
         )}
 
-        <div className="mt-8 text-center">
+        <div className="mt-8 rounded-2xl border border-destructive/20 bg-destructive/5 p-4">
+          <div className="flex items-center gap-2 text-sm font-extrabold text-destructive">
+            <AlertTriangle className="h-4 w-4" />
+            {tr("dangerZone")}
+          </div>
+          <p className="mt-1 text-xs text-muted-foreground">{tr("deleteAccountWarning")}</p>
+          <button
+            onClick={() => {
+              setDeleteConfirm("");
+              setShowDeleteAccount(true);
+            }}
+            disabled={deleteParentAccount.isPending}
+            className="mt-3 w-full rounded-xl border border-destructive/30 bg-destructive/10 py-2.5 text-sm font-extrabold text-destructive transition hover:bg-destructive/20 disabled:opacity-50"
+          >
+            {tr("deleteAccount")}
+          </button>
+        </div>
+
+        <div className="mt-6 text-center">
           <Link to="/" className="text-xs font-bold text-muted-foreground underline">
             ← {tr("backToProfiles").replace(/^←\s*/, "")}
           </Link>
