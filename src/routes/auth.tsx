@@ -201,20 +201,8 @@ function AuthPage() {
           </div>
         )}
 
-        <form onSubmit={submit} className="mt-4 space-y-3">
-          {mode === "signup" && (
-            <label className="block">
-              <span className="text-xs font-bold text-muted-foreground">{t("yourName")}</span>
-              <input
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder={t("parentName")}
-                className="mt-1 w-full rounded-xl border-2 border-border bg-background px-3 py-2.5 font-bold outline-none focus:border-primary"
-              />
-            </label>
-          )}
-
-          {mode === "kid" ? (
+        {mode === "kid" ? (
+          <form onSubmit={kidSubmit} className="mt-4 space-y-3">
             <label className="block">
               <span className="text-xs font-bold text-muted-foreground">{t("pin")}</span>
               <input
@@ -226,60 +214,66 @@ function AuthPage() {
                 className="mt-1 w-full rounded-xl border-2 border-border bg-background px-3 py-3 text-center font-mono text-2xl font-extrabold tracking-[0.6em] outline-none focus:border-primary"
               />
             </label>
-          ) : (
-            <>
-              <label className="block">
-                <span className="text-xs font-bold text-muted-foreground">{t("email")}</span>
-                <input
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@example.com"
-                  className="mt-1 w-full rounded-xl border-2 border-border bg-background px-3 py-2.5 font-bold outline-none focus:border-primary"
-                />
-              </label>
-              <label className="block">
-                <span className="text-xs font-bold text-muted-foreground">{t("password")}</span>
-                <input
-                  type="password"
-                  required
-                  minLength={6}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="mt-1 w-full rounded-xl border-2 border-border bg-background px-3 py-2.5 font-bold outline-none focus:border-primary"
-                />
-              </label>
-            </>
-          )}
-
-          <button
-            type="submit"
-            disabled={busy}
-            className="mt-2 w-full rounded-full bg-primary py-3 font-extrabold text-primary-foreground btn-chunky active:btn-chunky-press disabled:opacity-50"
-          >
-            {busy
-              ? t("pleaseWait")
-              : mode === "kid"
-                ? t("enter")
-                : mode === "signin"
-                  ? t("signIn")
-                  : t("createAccount")}
-          </button>
-        </form>
-
-        {mode !== "kid" && (
-          <p className="mt-4 text-center text-sm font-bold text-muted-foreground">
-            {mode === "signin" ? t("newHere") : t("alreadyHaveAccount")}{" "}
+            <button
+              type="submit"
+              disabled={busy}
+              className="mt-2 w-full rounded-full bg-primary py-3 font-extrabold text-primary-foreground btn-chunky active:btn-chunky-press disabled:opacity-50"
+            >
+              {busy ? t("pleaseWait") : t("enter")}
+            </button>
+          </form>
+        ) : otpSent ? (
+          <form onSubmit={verifyCode} className="mt-4 space-y-3">
+            <label className="block">
+              <span className="text-xs font-bold text-muted-foreground">{t("enterCode")}</span>
+              <input
+                value={otpCode}
+                onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                inputMode="numeric"
+                required
+                placeholder="••••••"
+                className="mt-1 w-full rounded-xl border-2 border-border bg-background px-3 py-3 text-center font-mono text-2xl font-extrabold tracking-[0.6em] outline-none focus:border-primary"
+              />
+            </label>
+            <button
+              type="submit"
+              disabled={busy}
+              className="mt-2 w-full rounded-full bg-primary py-3 font-extrabold text-primary-foreground btn-chunky active:btn-chunky-press disabled:opacity-50"
+            >
+              {busy ? t("pleaseWait") : t("signIn")}
+            </button>
             <button
               type="button"
-              className="text-primary underline"
-              onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
+              onClick={() => {
+                setOtpSent(false);
+                setOtpCode("");
+              }}
+              className="w-full text-center text-sm font-bold text-primary underline"
             >
-              {mode === "signin" ? t("createAccountLink") : t("signIn")}
+              {t("changeEmail")}
             </button>
-          </p>
+          </form>
+        ) : (
+          <form onSubmit={sendCode} className="mt-4 space-y-3">
+            <label className="block">
+              <span className="text-xs font-bold text-muted-foreground">{t("email")}</span>
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@example.com"
+                className="mt-1 w-full rounded-xl border-2 border-border bg-background px-3 py-2.5 font-bold outline-none focus:border-primary"
+              />
+            </label>
+            <button
+              type="submit"
+              disabled={busy}
+              className="mt-2 w-full rounded-full bg-primary py-3 font-extrabold text-primary-foreground btn-chunky active:btn-chunky-press disabled:opacity-50"
+            >
+              {busy ? t("pleaseWait") : t("getCode")}
+            </button>
+          </form>
         )}
       </div>
     </div>
