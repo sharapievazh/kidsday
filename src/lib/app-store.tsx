@@ -577,6 +577,15 @@ export function useDeleteKid() {
   });
 }
 
+export function useDeleteParentAccount() {
+  return useMutation({
+    mutationFn: async () => {
+      const { deleteParentAccountFn } = await import("./kids.functions");
+      return deleteParentAccountFn();
+    },
+  });
+}
+
 export function useRegeneratePin() {
   const qc = useQueryClient();
   return useMutation({
