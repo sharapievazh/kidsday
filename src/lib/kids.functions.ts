@@ -184,6 +184,41 @@ export const deleteKidFn = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+export const deleteParentAccountFn = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: parentProfile, error: pErr } = await supabaseAdmin
+      .from("profiles")
+      .select("id, role")
+      .eq("user_id", context.userId)
+      .maybeSingle();
+    if (pErr) throw new Error(pErr.message);
+    if (!parentProfile || parentProfile.role !== "parent") {
+      throw new Error("Forbidden: only a parent can delete their account");
+    }
+
+    const { data: kids, error: kErr } = await supabaseAdmin
+      .from("profiles")
+      .select("user_id")
+      .eq("parent_id", parentProfile.id)
+      .eq("role", "kid");
+    if (kErr) throw new Error(kErr.message);
+
+    for (const kid of kids ?? []) {
+      if (kid.user_id) {
+        await supabaseAdmin.auth.admin.deleteUser(kid.user_id);
+      }
+    }
+
+    // Deleting the parent's own auth user cascades their profile row,
+    // which cascades tasks/rewards/completions/purchases via existing FKs.
+    const { error } = await supabaseAdmin.auth.admin.deleteUser(context.userId);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
 const regenPinSchema = z.object({
   kidId: z.string().uuid(),
   pin: z.string().regex(/^\d{6}$/),

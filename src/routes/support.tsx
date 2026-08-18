@@ -74,14 +74,15 @@ function SupportPage() {
             <div>
               <dt className="font-bold">Как удалить аккаунт полностью?</dt>
               <dd className="mt-1 text-muted-foreground">
-                Напишите на{" "}
+                Это можно сделать прямо в приложении: Панель родителя → внизу → «Удалить аккаунт».
+                Это необратимо и удалит все данные семьи. Если кнопка не работает, напишите на{" "}
                 <a
                   href={`mailto:${SUPPORT_EMAIL}`}
                   className="font-bold text-primary underline underline-offset-2"
                 >
                   {SUPPORT_EMAIL}
                 </a>{" "}
-                — удалим аккаунт и все данные вручную.
+                — поможем вручную.
               </dd>
             </div>
           </dl>

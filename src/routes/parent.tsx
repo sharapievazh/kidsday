@@ -1,7 +1,19 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import { Pencil, Plus, Trash2, X, UserPlus, RefreshCw, KeyRound, Gift } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import {
+  Pencil,
+  Plus,
+  Trash2,
+  X,
+  UserPlus,
+  RefreshCw,
+  KeyRound,
+  Gift,
+  AlertTriangle,
+} from "lucide-react";
 
 import {
   CATEGORIES,
@@ -15,6 +27,7 @@ import {
   useAllCompletions,
   useCreateKid,
   useDeleteKid,
+  useDeleteParentAccount,
   useDeleteReward,
   useDeleteTask,
   useDisputeCompletion,
@@ -43,25 +56,139 @@ import { useLang, useT } from "@/lib/i18n";
 
 const KID_EMOJIS = Array.from(
   new Set([
-    "🌸", "🦊", "🐻", "🐯", "🐼", "🦄", "🐶", "🐱", "🦁", "🐵",
-    "🐧", "🐸", "🐨", "🐰", "🐷", "🐮", "🐔", "🐙", "🦋", "🐝",
-    "🐢", "🦖", "🦥", "🦩", "🦉", "🐳", "🐬", "🦈", "🐲",
-    "🌟", "🌈", "🍀", "🌻", "🌵", "🍄", "🌊", "🔥", "❄️",
-    "🎈", "🎨", "🚀", "⚽", "🎮", "🧸", "👑",
-    "🧙", "🧚", "🦸", "🥷", "👽", "🤖", "😺",
+    "🌸",
+    "🦊",
+    "🐻",
+    "🐯",
+    "🐼",
+    "🦄",
+    "🐶",
+    "🐱",
+    "🦁",
+    "🐵",
+    "🐧",
+    "🐸",
+    "🐨",
+    "🐰",
+    "🐷",
+    "🐮",
+    "🐔",
+    "🐙",
+    "🦋",
+    "🐝",
+    "🐢",
+    "🦖",
+    "🦥",
+    "🦩",
+    "🦉",
+    "🐳",
+    "🐬",
+    "🦈",
+    "🐲",
+    "🌟",
+    "🌈",
+    "🍀",
+    "🌻",
+    "🌵",
+    "🍄",
+    "🌊",
+    "🔥",
+    "❄️",
+    "🎈",
+    "🎨",
+    "🚀",
+    "⚽",
+    "🎮",
+    "🧸",
+    "👑",
+    "🧙",
+    "🧚",
+    "🦸",
+    "🥷",
+    "👽",
+    "🤖",
+    "😺",
   ]),
 );
 
 const REWARD_EMOJIS = Array.from(
   new Set([
-    "🎁", "💵", "💰", "🍦", "🍕", "🎮", "🎬", "📱", "🧸", "🍭",
-    "🎨", "⚽", "💸", "🤑", "🏆", "🥇", "🎯", "🎟️",
-    "🎪", "🎢", "🎡", "🎠", "🎳", "🚴", "🛼", "🛹", "🏓",
-    "🎾", "🏀", "🏈", "⚾", "🏐", "🎸", "🎹", "🥁", "🎤", "🎧",
-    "📚", "✏️", "🖍️", "🧩", "🪁", "🪀", "🎲", "♟️", "🎰", "🃏",
-    "🍔", "🍟", "🌭", "🍿", "🍩", "🍪", "🎂", "🍰", "🧁", "🍫",
-    "🍬", "🍡", "🍨", "🍧", "🍇", "🍓", "🍎", "🍌", "🍉", "🥑",
-    "🚲", "🛴", "🏕️", "🏖️", "🎆", "🎇", "🌠", "🌙", "🛝",
+    "🎁",
+    "💵",
+    "💰",
+    "🍦",
+    "🍕",
+    "🎮",
+    "🎬",
+    "📱",
+    "🧸",
+    "🍭",
+    "🎨",
+    "⚽",
+    "💸",
+    "🤑",
+    "🏆",
+    "🥇",
+    "🎯",
+    "🎟️",
+    "🎪",
+    "🎢",
+    "🎡",
+    "🎠",
+    "🎳",
+    "🚴",
+    "🛼",
+    "🛹",
+    "🏓",
+    "🎾",
+    "🏀",
+    "🏈",
+    "⚾",
+    "🏐",
+    "🎸",
+    "🎹",
+    "🥁",
+    "🎤",
+    "🎧",
+    "📚",
+    "✏️",
+    "🖍️",
+    "🧩",
+    "🪁",
+    "🪀",
+    "🎲",
+    "♟️",
+    "🎰",
+    "🃏",
+    "🍔",
+    "🍟",
+    "🌭",
+    "🍿",
+    "🍩",
+    "🍪",
+    "🎂",
+    "🍰",
+    "🧁",
+    "🍫",
+    "🍬",
+    "🍡",
+    "🍨",
+    "🍧",
+    "🍇",
+    "🍓",
+    "🍎",
+    "🍌",
+    "🍉",
+    "🥑",
+    "🚲",
+    "🛴",
+    "🏕️",
+    "🏖️",
+    "🎆",
+    "🎇",
+    "🌠",
+    "🌙",
+    "🛝",
   ]),
 );
 
@@ -151,6 +278,8 @@ type FormState = {
 function ParentPage() {
   const tr = useT();
   const { lang } = useLang();
+  const navigate = useNavigate();
+  const qc = useQueryClient();
   const { session } = useSession();
   const profileQ = useParentProfile(!!session);
   const parentId = profileQ.data?.id;
@@ -171,6 +300,7 @@ function ParentPage() {
   const markDelivered = useMarkDelivered();
   const createKid = useCreateKid();
   const deleteKid = useDeleteKid();
+  const deleteParentAccount = useDeleteParentAccount();
   const regenPin = useRegeneratePin();
   const disputeCompletion = useDisputeCompletion();
   const addReward = useAddReward(parentId);
@@ -212,6 +342,10 @@ function ParentPage() {
   // Family form state
   const [showAddKid, setShowAddKid] = useState(false);
   const [newKid, setNewKid] = useState({ name: "", emoji: "🙂", pin: generateRandomPin() });
+
+  // Account deletion confirmation
+  const [showDeleteAccount, setShowDeleteAccount] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState("");
 
   const defaultAssignee = kids[0]?.id ?? "";
   const blank: FormState = {
@@ -652,7 +786,25 @@ function ParentPage() {
           />
         )}
 
-        <div className="mt-8 text-center">
+        <div className="mt-8 rounded-2xl border border-destructive/20 bg-destructive/5 p-4">
+          <div className="flex items-center gap-2 text-sm font-extrabold text-destructive">
+            <AlertTriangle className="h-4 w-4" />
+            {tr("dangerZone")}
+          </div>
+          <p className="mt-1 text-xs text-muted-foreground">{tr("deleteAccountWarning")}</p>
+          <button
+            onClick={() => {
+              setDeleteConfirm("");
+              setShowDeleteAccount(true);
+            }}
+            disabled={deleteParentAccount.isPending}
+            className="mt-3 w-full rounded-xl border border-destructive/30 bg-destructive/10 py-2.5 text-sm font-extrabold text-destructive transition hover:bg-destructive/20 disabled:opacity-50"
+          >
+            {tr("deleteAccount")}
+          </button>
+        </div>
+
+        <div className="mt-6 text-center">
           <Link to="/" className="text-xs font-bold text-muted-foreground underline">
             ← {tr("backToProfiles").replace(/^←\s*/, "")}
           </Link>
@@ -1122,6 +1274,81 @@ function ParentPage() {
               </button>
             </div>
           </form>
+        </div>
+      )}
+
+      {showDeleteAccount && (
+        <div
+          className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 sm:items-center"
+          onClick={() => setShowDeleteAccount(false)}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="flex max-h-[90vh] w-full max-w-md flex-col overflow-y-auto rounded-t-3xl bg-card p-5 shadow-2xl sm:rounded-3xl"
+          >
+            <div className="mb-3 flex items-center justify-between">
+              <h3 className="flex items-center gap-2 text-lg font-extrabold text-destructive">
+                <AlertTriangle className="h-5 w-5" /> {tr("deleteAccount")}
+              </h3>
+              <button
+                type="button"
+                onClick={() => setShowDeleteAccount(false)}
+                className="rounded-full p-1 hover:bg-muted"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <p className="text-sm leading-relaxed text-muted-foreground">
+              {tr("deleteAccountWarning")}
+            </p>
+
+            <label className="mt-4 block">
+              <span className="text-xs font-bold text-destructive">
+                {tr("deleteAccountConfirmHint")}
+              </span>
+              <input
+                value={deleteConfirm}
+                onChange={(e) => setDeleteConfirm(e.target.value)}
+                placeholder={tr("deleteAccountConfirmPlaceholder")}
+                className="mt-1 w-full rounded-xl border-2 border-destructive/30 bg-background px-3 py-2.5 font-bold outline-none focus:border-destructive"
+                autoFocus
+              />
+            </label>
+
+            <div className="mt-5 flex gap-2">
+              <button
+                type="button"
+                onClick={() => setShowDeleteAccount(false)}
+                className="flex-1 rounded-full bg-muted py-3 font-extrabold text-muted-foreground"
+              >
+                {tr("cancel")}
+              </button>
+              <button
+                type="button"
+                disabled={deleteConfirm !== "УДАЛИТЬ" || deleteParentAccount.isPending}
+                onClick={() =>
+                  deleteParentAccount.mutate(undefined, {
+                    onSuccess: async () => {
+                      toast.success(tr("accountDeleted"));
+                      await qc.cancelQueries();
+                      qc.clear();
+                      await supabase.auth.signOut();
+                      navigate({ to: "/auth", replace: true });
+                    },
+                    onError: (err) => {
+                      toast.error(err instanceof Error ? err.message : tr("deleteAccountError"));
+                    },
+                  })
+                }
+                className="flex-1 rounded-full bg-destructive py-3 font-extrabold text-destructive-foreground transition hover:bg-destructive/90 disabled:opacity-50"
+              >
+                {deleteParentAccount.isPending
+                  ? tr("pleaseWait")
+                  : tr("deleteAccountConfirmButton")}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

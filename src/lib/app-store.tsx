@@ -66,7 +66,6 @@ export type Profile = {
   color: string | null;
   streak_count: number;
   streak_last_date: string | null;
-  
 };
 
 export type ScheduleType = "school_days" | "holidays" | "always";
@@ -466,8 +465,6 @@ export function coinsFor(kidId: string, completions: Completion[], purchases: Pu
 // (see src/lib/kids.functions.ts). This keeps every newly added kid getting
 // the same starter set, even when other kids in the family already have tasks.
 
-
-
 const INITIAL_REWARDS = [
   { name: "30 min extra screen time", name_ru: "30 мин экранного времени", emoji: "📱", cost: 50 },
   { name: "Choose dinner", name_ru: "Выбрать ужин", emoji: "🍕", cost: 75 },
@@ -574,6 +571,15 @@ export function useDeleteKid() {
       return deleteKidFn({ data: { kidId } });
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["kids"] }),
+  });
+}
+
+export function useDeleteParentAccount() {
+  return useMutation({
+    mutationFn: async () => {
+      const { deleteParentAccountFn } = await import("./kids.functions");
+      return deleteParentAccountFn();
+    },
   });
 }
 
