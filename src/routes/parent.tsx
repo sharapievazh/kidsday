@@ -162,6 +162,8 @@ type FormState = {
 function ParentPage() {
   const tr = useT();
   const { lang } = useLang();
+  const navigate = useNavigate();
+  const qc = useQueryClient();
   const { session } = useSession();
   const profileQ = useParentProfile(!!session);
   const parentId = profileQ.data?.id;
@@ -182,6 +184,7 @@ function ParentPage() {
   const markDelivered = useMarkDelivered();
   const createKid = useCreateKid();
   const deleteKid = useDeleteKid();
+  const deleteParentAccount = useDeleteParentAccount();
   const regenPin = useRegeneratePin();
   const disputeCompletion = useDisputeCompletion();
   const addReward = useAddReward(parentId);
