@@ -174,7 +174,7 @@ function AuthPage() {
 
         <p className="mt-3 text-center text-xs font-bold text-muted-foreground">{t("roleHint")}</p>
 
-        {mode !== "kid" && (
+        {mode !== "kid" && !otpSent && (
           <button
             onClick={google}
             disabled={busy}
@@ -184,7 +184,7 @@ function AuthPage() {
           </button>
         )}
 
-        {mode !== "kid" && Capacitor.getPlatform() === "ios" && (
+        {mode !== "kid" && !otpSent && Capacitor.getPlatform() === "ios" && (
           <button
             onClick={apple}
             disabled={busy}
@@ -194,7 +194,7 @@ function AuthPage() {
           </button>
         )}
 
-        {mode !== "kid" && (
+        {mode !== "kid" && !otpSent && (
           <div className="my-5 flex items-center gap-3 text-xs font-bold text-muted-foreground">
             <span className="h-px flex-1 bg-border" /> {t("or")}{" "}
             <span className="h-px flex-1 bg-border" />
