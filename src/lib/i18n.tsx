@@ -31,6 +31,12 @@ const DICT = {
     newHere: "New here?",
     alreadyHaveAccount: "Already have an account?",
     createAccountLink: "Create an account",
+    codeSent: "Code sent to your email",
+    enterCode: "Enter the code from your email",
+    getCode: "Get code",
+    changeEmail: "Change email",
+    continueTitle: "Continue",
+    appTagline: "A habit and task tracker for kids",
     // Common
     switch: "Switch",
     signOut: "Sign out",
