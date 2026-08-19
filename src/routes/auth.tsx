@@ -107,14 +107,32 @@ function AuthPage() {
   const google = async () => {
     setBusy(true);
     try {
-      const result = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: window.location.origin,
-      });
-      if (result.error) {
-        toast.error(result.error.message ?? "Google sign-in failed");
-      } else if (!result.redirected) {
+      if (Capacitor.getPlatform() === "ios") {
+        const res = await SocialLogin.login({
+          provider: "google",
+          options: { scopes: ["email", "profile"] },
+        });
+        const idToken = res.result.idToken;
+        if (!idToken) throw new Error("No ID token from Google");
+        const { error } = await supabase.auth.signInWithIdToken({
+          provider: "google",
+          token: idToken,
+        });
+        if (error) throw error;
+        toast.success("Welcome!");
         navigate({ to: "/" });
+      } else {
+        const result = await lovable.auth.signInWithOAuth("google", {
+          redirect_uri: window.location.origin,
+        });
+        if (result.error) {
+          toast.error(result.error.message ?? "Google sign-in failed");
+        } else if (!result.redirected) {
+          navigate({ to: "/" });
+        }
       }
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Google sign-in failed");
     } finally {
       setBusy(false);
     }
