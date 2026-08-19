@@ -112,7 +112,7 @@ function AuthPage() {
           provider: "google",
           options: { scopes: ["email", "profile"] },
         });
-        const idToken = res.result.idToken;
+        const idToken = "idToken" in res.result ? res.result.idToken : null;
         if (!idToken) throw new Error("No ID token from Google");
         const { error } = await supabase.auth.signInWithIdToken({
           provider: "google",
