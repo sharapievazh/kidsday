@@ -283,6 +283,7 @@ function Heatmap({
   countByDay: Map<string, number>;
   maxCount: number;
 }) {
+  const { lang } = useLang();
   const cells = useMemo(() => {
     // Snap first column to Monday of start's week.
     const firstColStart = new Date(start);
