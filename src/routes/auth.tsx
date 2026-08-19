@@ -1,11 +1,12 @@
 import { createFileRoute, useNavigate, redirect } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { lookupKidEmailByPinFn } from "@/lib/kids.functions";
 import { LanguageToggle, useT } from "@/lib/i18n";
 import { SignInWithApple } from "@capacitor-community/apple-sign-in";
+import { SocialLogin } from "@capgo/capacitor-social-login";
 import { Capacitor } from "@capacitor/core";
 
 export const Route = createFileRoute("/auth")({
