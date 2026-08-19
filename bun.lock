@@ -7,6 +7,7 @@
       "dependencies": {
         "@capacitor-community/apple-sign-in": "^7.1.0",
         "@capacitor/core": "^8.5.0",
+        "@capgo/capacitor-social-login": "^8.4.3",
         "@hookform/resolvers": "^5.2.2",
         "@lovable.dev/cloud-auth-js": "^1.1.2",
         "@radix-ui/react-accordion": "^1.2.12",
@@ -133,6 +134,8 @@
     "@capacitor-community/apple-sign-in": ["@capacitor-community/apple-sign-in@7.1.0", "https://europe-west1-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache/@capacitor-community/apple-sign-in/-/apple-sign-in-7.1.0.tgz", { "dependencies": { "@types/scriptjs": "0.0.2", "scriptjs": "^2.5.9" }, "peerDependencies": { "@capacitor/core": ">=7.0.0" } }, "sha512-df7cA7vfvvvilTtpJKeVvxO31W+py5t3HK9233GBD5MvgAgtGvCqeQ3pI0noNkVsKPF9B1g/po8Mph6s4bVSmw=="],
 
     "@capacitor/core": ["@capacitor/core@8.5.0", "https://europe-west1-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache/@capacitor/core/-/core-8.5.0.tgz", { "dependencies": { "tslib": "^2.1.0" } }, "sha512-Ca4krtqH1hothjtBIwf2J2TW7IhYq1ujp8QeItTiJohNsqij8ja2DYYH3DU0l8RmxCWaBAFTGA2TgOgOMCSNsQ=="],
+
+    "@capgo/capacitor-social-login": ["@capgo/capacitor-social-login@8.4.3", "https://europe-west4-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache/@capgo/capacitor-social-login/-/capacitor-social-login-8.4.3.tgz", { "dependencies": { "tslib": "^2.8.1" }, "peerDependencies": { "@capacitor/core": ">=8.0.0" } }, "sha512-d5jb2k/g4k4eUSmymZ0JIRqY3HAynKP0PeXMtxQvT6UeNF1yrfiyb+xAWysayf8PHo7wofG62iUumvPZRTsp4Q=="],
 
     "@date-fns/tz": ["@date-fns/tz@1.4.1", "", {}, "sha512-P5LUNhtbj6YfI3iJjw5EL9eUAG6OitD0W3fWQcpQjDRc/QIsL0tRNuO1PcDvPccWL1fSTXXdE1ds+l95DV/OFA=="],
 

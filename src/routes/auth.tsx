@@ -1,11 +1,12 @@
 import { createFileRoute, useNavigate, redirect } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { lookupKidEmailByPinFn } from "@/lib/kids.functions";
 import { LanguageToggle, useT } from "@/lib/i18n";
 import { SignInWithApple } from "@capacitor-community/apple-sign-in";
+import { SocialLogin } from "@capgo/capacitor-social-login";
 import { Capacitor } from "@capacitor/core";
 
 export const Route = createFileRoute("/auth")({
@@ -35,6 +36,18 @@ function AuthPage() {
   const [busy, setBusy] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
   const [otpCode, setOtpCode] = useState("");
+
+  useEffect(() => {
+    if (Capacitor.getPlatform() === "ios") {
+      SocialLogin.initialize({
+        google: {
+          iOSClientId: "@secret:GOOGLE_OAUTH_CLIENT_ID",
+          iOSServerClientId: "@secret:GOOGLE_OAUTH_CLIENT_ID",
+          mode: "online",
+        },
+      });
+    }
+  }, []);
 
   const sendCode = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -94,14 +107,32 @@ function AuthPage() {
   const google = async () => {
     setBusy(true);
     try {
-      const result = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: window.location.origin,
-      });
-      if (result.error) {
-        toast.error(result.error.message ?? "Google sign-in failed");
-      } else if (!result.redirected) {
+      if (Capacitor.getPlatform() === "ios") {
+        const res = await SocialLogin.login({
+          provider: "google",
+          options: { scopes: ["email", "profile"] },
+        });
+        const idToken = "idToken" in res.result ? res.result.idToken : null;
+        if (!idToken) throw new Error("No ID token from Google");
+        const { error } = await supabase.auth.signInWithIdToken({
+          provider: "google",
+          token: idToken,
+        });
+        if (error) throw error;
+        toast.success("Welcome!");
         navigate({ to: "/" });
+      } else {
+        const result = await lovable.auth.signInWithOAuth("google", {
+          redirect_uri: window.location.origin,
+        });
+        if (result.error) {
+          toast.error(result.error.message ?? "Google sign-in failed");
+        } else if (!result.redirected) {
+          navigate({ to: "/" });
+        }
       }
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Google sign-in failed");
     } finally {
       setBusy(false);
     }
