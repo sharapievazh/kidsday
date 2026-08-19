@@ -8,7 +8,7 @@ import {
   type Category,
   type Task,
 } from "@/lib/app-store";
-import { useT } from "@/lib/i18n";
+import { useLang, useT } from "@/lib/i18n";
 
 type Range = "month" | "year";
 
@@ -60,6 +60,7 @@ export function ProgressView({
   profileId: string;
   parentId: string | undefined;
 }) {
+  const { lang } = useLang();
   const t = useT();
   const [range, setRange] = useState<Range>("month");
 
@@ -309,7 +310,7 @@ function Heatmap({
 
   // Month labels above columns where month changes.
   const monthLabels = useMemo(() => {
-    const fmt = new Intl.DateTimeFormat(undefined, { month: "short" });
+    const fmt = new Intl.DateTimeFormat(lang === "ru" ? "ru-RU" : "en-US", { month: "short" });
     const labels: Array<string | null> = [];
     let lastMonth = -1;
     for (const week of cells) {
