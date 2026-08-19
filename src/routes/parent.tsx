@@ -450,7 +450,12 @@ function ParentPage() {
               </>
             ) : (
               kids.map((k) => (
-                <div key={k.id} className="rounded-2xl bg-white/15 p-3 backdrop-blur">
+                <button
+                  key={k.id}
+                  type="button"
+                  onClick={() => navigate({ to: "/kid/$kidId", params: { kidId: k.id } })}
+                  className="rounded-2xl bg-white/15 p-3 text-left backdrop-blur transition hover:bg-white/25"
+                >
                   <div className="flex items-center gap-2 text-sm font-extrabold">
                     <span className="text-lg">{k.emoji ?? "🙂"}</span>
                     {k.name}
@@ -458,7 +463,7 @@ function ParentPage() {
                   <div className="mt-1 text-xs opacity-90">
                     🔥 {k.streak_count} · 🪙 {coinsFor(k.id, completionsQ.data ?? [], purchases)}
                   </div>
-                </div>
+                </button>
               ))
             )}
           </div>
@@ -813,7 +818,7 @@ function ParentPage() {
 
       {creating && (
         <div
-          className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 sm:items-center"
+          className="fixed inset-0 z-[60] flex items-end justify-center bg-black/40 sm:items-center"
           onClick={close}
         >
           <form
@@ -1037,7 +1042,7 @@ function ParentPage() {
 
       {showAddKid && (
         <div
-          className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 sm:items-center"
+          className="fixed inset-0 z-[60] flex items-end justify-center bg-black/40 sm:items-center"
           onClick={() => setShowAddKid(false)}
         >
           <form
@@ -1123,7 +1128,7 @@ function ParentPage() {
 
       {rewardModal && (
         <div
-          className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 sm:items-center"
+          className="fixed inset-0 z-[60] flex items-end justify-center bg-black/40 sm:items-center"
           onClick={() => setRewardModal(false)}
         >
           <form
@@ -1279,7 +1284,7 @@ function ParentPage() {
 
       {showDeleteAccount && (
         <div
-          className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 sm:items-center"
+          className="fixed inset-0 z-[60] flex items-end justify-center bg-black/40 sm:items-center"
           onClick={() => setShowDeleteAccount(false)}
         >
           <div

@@ -21,7 +21,7 @@ export function RoleSwitcher() {
 
   return (
     <div className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] left-1/2 z-50 -translate-x-1/2">
-      <div className="flex gap-1 rounded-full border border-border bg-card p-1 shadow-lg">
+      <div className="flex gap-1 overflow-x-auto rounded-full border border-border bg-card p-1 shadow-lg max-w-[calc(100vw-2rem)]">
         {kids.map((k) => {
           const to = `/kid/${k.id}`;
           const active = location.pathname.startsWith(`/kid/${k.id}`);
