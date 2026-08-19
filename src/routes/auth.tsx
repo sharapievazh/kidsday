@@ -41,8 +41,10 @@ function AuthPage() {
     if (Capacitor.getPlatform() === "ios") {
       SocialLogin.initialize({
         google: {
-          iOSClientId: "@secret:GOOGLE_OAUTH_CLIENT_ID",
-          iOSServerClientId: "@secret:GOOGLE_OAUTH_WEB_CLIENT_ID",
+          iOSClientId:
+            "940428828770-9mdmcs6n0m4qvmbeqch0b4llvs3072tu.apps.googleusercontent.com",
+          iOSServerClientId:
+            "940428828770-jbp90dk2p8m7ipr5dfhqac6fegvd08a2.apps.googleusercontent.com",
           mode: "online",
         },
       });
