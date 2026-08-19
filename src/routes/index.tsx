@@ -112,7 +112,6 @@ function Index() {
           </button>
         )}
 
-
         <Link
           to="/parent"
           className="mt-6 flex items-center gap-4 rounded-3xl border-2 border-dashed border-border bg-muted/40 p-4 transition-all hover:border-foreground/30"
