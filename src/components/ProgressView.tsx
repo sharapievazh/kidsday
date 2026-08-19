@@ -141,7 +141,10 @@ export function ProgressView({
   }, [catTotals]);
 
   const bestStreak = useMemo(
-    () => computeBestStreak(allCompletions.filter((c) => c.kid_id === profileId).map((c) => c.completed_on)),
+    () =>
+      computeBestStreak(
+        allCompletions.filter((c) => c.kid_id === profileId).map((c) => c.completed_on),
+      ),
     [allCompletions, profileId],
   );
 
@@ -170,12 +173,7 @@ export function ProgressView({
           label={range === "month" ? t("completionsMonth") : t("completionsYear")}
           color="var(--primary)"
         />
-        <StatCard
-          icon="🏆"
-          value={bestStreak}
-          label={t("bestStreak")}
-          color="var(--streak)"
-        />
+        <StatCard icon="🏆" value={bestStreak} label={t("bestStreak")} color="var(--streak)" />
       </div>
 
       {/* Heatmap */}
@@ -183,12 +181,7 @@ export function ProgressView({
         <h3 className="mb-2 text-xs font-extrabold uppercase tracking-widest text-muted-foreground">
           {t("heatmapTitle")}
         </h3>
-        <Heatmap
-          start={rangeStart}
-          end={today}
-          countByDay={countByDay}
-          maxCount={maxCount}
-        />
+        <Heatmap start={rangeStart} end={today} countByDay={countByDay} maxCount={maxCount} />
         <HeatLegend max={maxCount} labelLess={t("less")} labelMore={t("more")} />
       </section>
 
@@ -213,9 +206,7 @@ export function ProgressView({
                     <span className="font-bold">
                       {CATEGORY_EMOJI[cat]} {t(`cat_${cat}`)}
                     </span>
-                    <span className="font-extrabold tabular-nums text-muted-foreground">
-                      {v}
-                    </span>
+                    <span className="font-extrabold tabular-nums text-muted-foreground">{v}</span>
                   </div>
                   <div className="h-2 overflow-hidden rounded-full bg-muted">
                     <div
@@ -259,9 +250,7 @@ function StatCard({
         <span className="text-xl">{icon}</span>
         <span className="text-2xl font-extrabold leading-none">{value}</span>
       </div>
-      <div className="mt-1 text-[10px] font-bold uppercase tracking-wider opacity-75">
-        {label}
-      </div>
+      <div className="mt-1 text-[10px] font-bold uppercase tracking-wider opacity-75">{label}</div>
     </div>
   );
 }
@@ -301,7 +290,7 @@ function Heatmap({
 
     const totalDays = daysBetween(firstColStart, end) + 1;
     const weeks: Array<Array<{ date: Date | null; iso: string | null }>> = [];
-    let cursor = new Date(firstColStart);
+    const cursor = new Date(firstColStart);
     let weekIdx = 0;
     for (let i = 0; i < totalDays; i++) {
       if (i % 7 === 0) {
@@ -352,7 +341,13 @@ function Heatmap({
           <div className="flex flex-col gap-[3px] pr-1 text-[9px] font-bold text-muted-foreground">
             {[0, 1, 2, 3, 4, 5, 6].map((row) => (
               <div key={row} className="h-[12px] leading-[12px]">
-                {row === 0 ? dayLabels[0] : row === 2 ? dayLabels[1] : row === 4 ? dayLabels[2] : ""}
+                {row === 0
+                  ? dayLabels[0]
+                  : row === 2
+                    ? dayLabels[1]
+                    : row === 4
+                      ? dayLabels[2]
+                      : ""}
               </div>
             ))}
           </div>
@@ -391,7 +386,13 @@ function HeatLegend({
   labelLess: string;
   labelMore: string;
 }) {
-  const buckets = [0, Math.max(1, Math.round(max * 0.25)), Math.max(2, Math.round(max * 0.5)), Math.max(3, Math.round(max * 0.75)), Math.max(4, max)];
+  const buckets = [
+    0,
+    Math.max(1, Math.round(max * 0.25)),
+    Math.max(2, Math.round(max * 0.5)),
+    Math.max(3, Math.round(max * 0.75)),
+    Math.max(4, max),
+  ];
   return (
     <div className="mt-2 flex items-center justify-end gap-1 text-[10px] font-bold text-muted-foreground">
       <span>{labelLess}</span>
