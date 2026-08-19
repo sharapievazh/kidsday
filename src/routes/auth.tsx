@@ -42,7 +42,7 @@ function AuthPage() {
       SocialLogin.initialize({
         google: {
           iOSClientId: "@secret:GOOGLE_OAUTH_CLIENT_ID",
-          iOSServerClientId: "@secret:GOOGLE_OAUTH_CLIENT_ID",
+          iOSServerClientId: "@secret:GOOGLE_OAUTH_WEB_CLIENT_ID",
           mode: "online",
         },
       });
