@@ -41,8 +41,8 @@ function AuthPage() {
     if (Capacitor.getPlatform() === "ios") {
       SocialLogin.initialize({
         google: {
-          iOSClientId: process.env["GOOGLE_OAUTH_CLIENT_ID"]!,
-          iOSServerClientId: process.env["GOOGLE_OAUTH_CLIENT_ID"]!,
+          iOSClientId: "@secret:GOOGLE_OAUTH_CLIENT_ID",
+          iOSServerClientId: "@secret:GOOGLE_OAUTH_CLIENT_ID",
           mode: "online",
         },
       });
