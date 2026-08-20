@@ -1,0 +1,1 @@
+CREATE POLICY "Deny all" ON public.kid_secrets FOR ALL TO public USING (false) WITH CHECK (false);
