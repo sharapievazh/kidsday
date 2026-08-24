@@ -118,7 +118,11 @@ function RootComponent() {
             <Outlet />
           </div>
           <RoleSwitcher />
-          <Toaster position="top-center" richColors />
+          <Toaster
+            position="top-center"
+            richColors
+            offset={{ top: "calc(env(safe-area-inset-top) + 16px)" }}
+          />
         </AppGate>
       </LanguageProvider>
     </QueryClientProvider>
