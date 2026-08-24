@@ -26,6 +26,14 @@ export const Route = createFileRoute("/auth")({
 
 type Mode = "parent" | "kid";
 
+async function sha256Hex(input: string): Promise<string> {
+  const data = new TextEncoder().encode(input);
+  const digest = await crypto.subtle.digest("SHA-256", data);
+  return Array.from(new Uint8Array(digest))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
 function AuthPage() {
   const navigate = useNavigate();
   const t = useT();
@@ -110,17 +118,18 @@ function AuthPage() {
     setBusy(true);
     try {
       if (Capacitor.getPlatform() === "ios") {
-        const nonce = crypto.randomUUID();
+        const rawNonce = crypto.randomUUID();
+        const hashedNonce = await sha256Hex(rawNonce);
         const res = await SocialLogin.login({
           provider: "google",
-          options: { scopes: ["email", "profile"], nonce, forcePrompt: true },
+          options: { scopes: ["email", "profile"], nonce: hashedNonce, forcePrompt: true },
         });
         const idToken = "idToken" in res.result ? res.result.idToken : null;
         if (!idToken) throw new Error("No ID token from Google");
         const { error } = await supabase.auth.signInWithIdToken({
           provider: "google",
           token: idToken,
-          nonce,
+          nonce: rawNonce,
         });
         if (error) throw error;
         toast.success("Welcome!");
