@@ -1331,7 +1331,7 @@ function ParentPage() {
               </button>
               <button
                 type="button"
-                disabled={deleteConfirm !== tr("deleteAccountConfirmWord") || deleteParentAccount.isPending}
+                disabled={deleteConfirm.trim().toUpperCase() !== tr("deleteAccountConfirmWord").toUpperCase() || deleteParentAccount.isPending}
                 onClick={() =>
                   deleteParentAccount.mutate(undefined, {
                     onSuccess: async () => {
