@@ -110,15 +110,17 @@ function AuthPage() {
     setBusy(true);
     try {
       if (Capacitor.getPlatform() === "ios") {
+        const nonce = crypto.randomUUID();
         const res = await SocialLogin.login({
           provider: "google",
-          options: { scopes: ["email", "profile"] },
+          options: { scopes: ["email", "profile"], nonce },
         });
         const idToken = "idToken" in res.result ? res.result.idToken : null;
         if (!idToken) throw new Error("No ID token from Google");
         const { error } = await supabase.auth.signInWithIdToken({
           provider: "google",
           token: idToken,
+          nonce,
         });
         if (error) throw error;
         toast.success("Welcome!");
