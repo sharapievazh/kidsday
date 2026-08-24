@@ -127,6 +127,7 @@ const DICT = {
     deleteAccount: "Delete account",
     deleteAccountWarning:
       "This permanently deletes your parent account, all children, tasks, rewards, purchases and completion history. This action cannot be undone.",
+    deleteAccountConfirmWord: "DELETE",
     deleteAccountConfirmHint: 'Type "DELETE" below to confirm:',
     deleteAccountConfirmPlaceholder: "Type DELETE",
     deleteAccountConfirmButton: "Permanently delete account",
@@ -284,6 +285,7 @@ const DICT = {
     deleteAccount: "Удалить аккаунт",
     deleteAccountWarning:
       "Это навсегда удалит ваш аккаунт родителя, всех детей, задания, награды, покупки и историю выполнений. Отменить будет невозможно.",
+    deleteAccountConfirmWord: "УДАЛИТЬ",
     deleteAccountConfirmHint: 'Введите слово "УДАЛИТЬ" для подтверждения:',
     deleteAccountConfirmPlaceholder: "Введите УДАЛИТЬ",
     deleteAccountConfirmButton: "Удалить аккаунт навсегда",
