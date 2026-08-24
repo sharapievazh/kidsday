@@ -113,7 +113,7 @@ function AuthPage() {
         const nonce = crypto.randomUUID();
         const res = await SocialLogin.login({
           provider: "google",
-          options: { scopes: ["email", "profile"], nonce },
+          options: { scopes: ["email", "profile"], nonce, forcePrompt: true },
         });
         const idToken = "idToken" in res.result ? res.result.idToken : null;
         if (!idToken) throw new Error("No ID token from Google");
