@@ -26,6 +26,14 @@ export const Route = createFileRoute("/auth")({
 
 type Mode = "parent" | "kid";
 
+async function sha256Hex(input: string): Promise<string> {
+  const data = new TextEncoder().encode(input);
+  const digest = await crypto.subtle.digest("SHA-256", data);
+  return Array.from(new Uint8Array(digest))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
 function AuthPage() {
   const navigate = useNavigate();
   const t = useT();
