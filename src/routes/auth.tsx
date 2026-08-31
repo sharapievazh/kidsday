@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
-import { lookupKidEmailByPinFn } from "@/lib/kids.functions";
+import { lookupKidEmailByPinFn, demoSignInFn } from "@/lib/kids.functions";
 import { LanguageToggle, useT } from "@/lib/i18n";
 import { SignInWithApple } from "@capacitor-community/apple-sign-in";
 import { SocialLogin } from "@capgo/capacitor-social-login";
@@ -25,6 +25,8 @@ export const Route = createFileRoute("/auth")({
 });
 
 type Mode = "parent" | "kid";
+
+const DEMO_EMAIL = "applereview@kidsday.app";
 
 async function sha256Hex(input: string): Promise<string> {
   const data = new TextEncoder().encode(input);
@@ -63,6 +65,11 @@ function AuthPage() {
     e.preventDefault();
     setBusy(true);
     try {
+      if (email.trim().toLowerCase() === DEMO_EMAIL) {
+        setOtpSent(true);
+        toast.success(t("codeSent"));
+        return;
+      }
       const { error } = await supabase.auth.signInWithOtp({
         email,
         options: { shouldCreateUser: true },
@@ -81,6 +88,17 @@ function AuthPage() {
     e.preventDefault();
     setBusy(true);
     try {
+      if (email.trim().toLowerCase() === DEMO_EMAIL) {
+        const result = await demoSignInFn({ data: { code: otpCode } });
+        const { error } = await supabase.auth.setSession({
+          access_token: result.access_token,
+          refresh_token: result.refresh_token,
+        });
+        if (error) throw error;
+        toast.success(t("welcomeBack"));
+        navigate({ to: "/" });
+        return;
+      }
       const { error } = await supabase.auth.verifyOtp({ email, token: otpCode, type: "email" });
       if (error) throw error;
       toast.success(t("welcomeBack"));
@@ -91,6 +109,7 @@ function AuthPage() {
       setBusy(false);
     }
   };
+
 
   const kidSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
