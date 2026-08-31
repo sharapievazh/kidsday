@@ -4,6 +4,33 @@ import { z } from "zod";
 
 const KID_EMAIL_DOMAIN = "kidsday.app";
 
+const DEMO_EMAIL = "applereview@kidsday.app";
+const DEMO_CODE = "482915";
+const DEMO_PASSWORD = "5NsPhlMSf-1E1NGA6yiebzio7GUywNNK";
+
+const demoSignInSchema = z.object({ code: z.string() });
+
+// Fixed-code bypass for the single pre-created App Review demo parent account.
+export const demoSignInFn = createServerFn({ method: "POST" })
+  .inputValidator((data: unknown) => demoSignInSchema.parse(data))
+  .handler(async ({ data }) => {
+    if (data.code !== DEMO_CODE) {
+      throw new Error("Invalid code");
+    }
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: signInData, error } = await supabaseAdmin.auth.signInWithPassword({
+      email: DEMO_EMAIL,
+      password: DEMO_PASSWORD,
+    });
+    if (error || !signInData.session) {
+      throw new Error("Demo sign-in failed");
+    }
+    return {
+      access_token: signInData.session.access_token,
+      refresh_token: signInData.session.refresh_token,
+    };
+  });
+
 // Starter tasks seeded for every newly created kid. Parent can edit/delete
 // or add more later via Parent Dashboard.
 const INITIAL_KID_TASKS: Array<{
