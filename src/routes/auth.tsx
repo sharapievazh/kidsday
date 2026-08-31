@@ -63,6 +63,11 @@ function AuthPage() {
     e.preventDefault();
     setBusy(true);
     try {
+      if (email.trim().toLowerCase() === DEMO_EMAIL) {
+        setOtpSent(true);
+        toast.success(t("codeSent"));
+        return;
+      }
       const { error } = await supabase.auth.signInWithOtp({
         email,
         options: { shouldCreateUser: true },
@@ -81,6 +86,17 @@ function AuthPage() {
     e.preventDefault();
     setBusy(true);
     try {
+      if (email.trim().toLowerCase() === DEMO_EMAIL) {
+        const result = await demoSignInFn({ data: { code: otpCode } });
+        const { error } = await supabase.auth.setSession({
+          access_token: result.access_token,
+          refresh_token: result.refresh_token,
+        });
+        if (error) throw error;
+        toast.success(t("welcomeBack"));
+        navigate({ to: "/" });
+        return;
+      }
       const { error } = await supabase.auth.verifyOtp({ email, token: otpCode, type: "email" });
       if (error) throw error;
       toast.success(t("welcomeBack"));
@@ -91,6 +107,7 @@ function AuthPage() {
       setBusy(false);
     }
   };
+
 
   const kidSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
