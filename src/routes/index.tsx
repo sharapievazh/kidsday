@@ -31,9 +31,9 @@ function Index() {
   const completionsQ = useAllCompletions(allIds);
   const purchasesQ = usePurchases(allIds);
   const navigate = useNavigate();
-  const loading = isKid || profileQ.isLoading || kidsQ.isLoading;
+  const t = useT();
 
-  const loading = profileQ.isLoading || kidsQ.isLoading;
+  const loading = isKid || profileQ.isLoading || kidsQ.isLoading;
 
   return (
     <div className="px-5 pt-6 pb-10">

@@ -35,6 +35,7 @@ import {
   useKids,
   useMarkDelivered,
   useParentProfile,
+  useKidSelfRedirect,
   usePurchases,
   useRegeneratePin,
   useReviewFeed,
