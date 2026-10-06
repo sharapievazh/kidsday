@@ -31,7 +31,7 @@ function Index() {
   const completionsQ = useAllCompletions(allIds);
   const purchasesQ = usePurchases(allIds);
   const navigate = useNavigate();
-  const t = useT();
+  const loading = isKid || profileQ.isLoading || kidsQ.isLoading;
 
   const loading = profileQ.isLoading || kidsQ.isLoading;
 
