@@ -66,6 +66,7 @@ function withServerFnCors(response: Response, allowOrigin: string | null): Respo
   if (!allowOrigin) return response;
   const headers = new Headers(response.headers);
   headers.set("Access-Control-Allow-Origin", allowOrigin);
+  headers.set("Access-Control-Expose-Headers", "x-tss-serialized, x-tss-raw");
   headers.append("Vary", "Origin");
   return new Response(response.body, {
     status: response.status,
