@@ -119,13 +119,20 @@ function AuthPage() {
       const { email: kidEmail, name: kidName } = await lookupKidEmailByPinFn({
         data: { pin },
       });
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data: signIn, error } = await supabase.auth.signInWithPassword({
         email: kidEmail,
         password: pin,
       });
       if (error) throw error;
       toast.success(`Hi ${kidName}! 🎉`);
-      navigate({ to: "/" });
+      const { data: me } = await supabase
+        .from("profiles_safe" as never)
+        .select("id")
+        .eq("user_id", signIn.user?.id ?? "")
+        .maybeSingle();
+      const myId = (me as unknown as { id: string } | null)?.id;
+      if (myId) navigate({ to: "/kid/$kidId", params: { kidId: myId }, replace: true });
+      else navigate({ to: "/" });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Authentication failed");
     } finally {
