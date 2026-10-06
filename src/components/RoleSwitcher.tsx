@@ -76,7 +76,7 @@ export function RoleSwitcher() {
 
 export function TopBar({ title, rightSlot }: { title: string; rightSlot?: React.ReactNode }) {
   return (
-    <header className="sticky top-0 z-30 flex items-center justify-between border-b border-border bg-card/90 px-4 py-3 backdrop-blur">
+    <header className="sticky top-[env(safe-area-inset-top)] z-30 flex items-center justify-between border-b border-border bg-card/90 px-4 py-3 backdrop-blur">
       <Link to="/" className="text-lg font-extrabold tracking-tight">
         <img src="/favicon.png" alt="" className="inline-block h-6 w-6 rounded-md align-[-4px]" />{" "}
         <span className="text-primary">Kids Day</span>

@@ -133,7 +133,7 @@ function KidPage() {
         </p>
       </div>
 
-      <div className="sticky top-[57px] z-20 mt-5 flex gap-2 border-b border-border bg-background/95 px-4 py-2 backdrop-blur">
+      <div className="sticky top-[calc(57px+env(safe-area-inset-top))] z-20 mt-5 flex gap-2 border-b border-border bg-background/95 px-4 py-2 backdrop-blur">
         {(["tasks", "rewards", "progress"] as const).map((tk) => (
           <button
             key={tk}
