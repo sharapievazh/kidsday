@@ -111,6 +111,17 @@
     padding-top: env(safe-area-inset-top);
     padding-bottom: env(safe-area-inset-bottom);
   }
+  body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: env(safe-area-inset-top);
+    background: var(--color-card);
+    z-index: 40;
+    pointer-events: none;
+  }
 }
 
 /* Chunky "Duo" button shadow */
