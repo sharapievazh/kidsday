@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient, type UseQueryResult } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
+import { useNavigate } from "@tanstack/react-router";
 import type { Session } from "@supabase/supabase-js";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -201,6 +202,54 @@ export function useParentProfile(enabled: boolean): UseQueryResult<Profile | nul
       return (data as unknown as Profile) ?? null;
     },
   });
+}
+
+// ============== MY PROFILE (any role) ==============
+
+export function useMyProfile(enabled: boolean): UseQueryResult<Profile | null> {
+  return useQuery({
+    queryKey: ["my-profile"],
+    enabled,
+    queryFn: async () => {
+      const { data: userData } = await supabase.auth.getUser();
+      const uid = userData.user?.id;
+      if (!uid) return null;
+      const { data, error } = await supabase
+        .from("profiles_safe" as never)
+        .select("*")
+        .eq("user_id", uid)
+        .maybeSingle();
+      if (error) throw error;
+      return (data as unknown as Profile) ?? null;
+    },
+  });
+}
+
+export function familyParentIdOf(my: Profile | null | undefined): string | undefined {
+  if (!my) return undefined;
+  if (my.role === "parent") return my.id;
+  if (my.role === "kid") return my.parent_id ?? undefined;
+  return undefined;
+}
+
+export function useFamilyParentId(enabled: boolean) {
+  const q = useMyProfile(enabled);
+  return { ...q, familyParentId: familyParentIdOf(q.data) };
+}
+
+/** For kid sessions: redirect to the kid's own page unless already there. */
+export function useKidSelfRedirect(enabled: boolean, currentKidId?: string) {
+  const q = useMyProfile(enabled);
+  const navigate = useNavigate();
+  const my = q.data;
+  const isKid = my?.role === "kid";
+  const shouldRedirect = isKid && currentKidId !== my?.id;
+  useEffect(() => {
+    if (shouldRedirect && my) {
+      navigate({ to: "/kid/$kidId", params: { kidId: my.id }, replace: true });
+    }
+  }, [shouldRedirect, my, navigate]);
+  return { isKid, redirecting: shouldRedirect, loading: q.isLoading };
 }
 
 // ============== KIDS ==============

@@ -1,19 +1,21 @@
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { LogOut } from "lucide-react";
-import { useKids, useParentProfile, useSession } from "@/lib/app-store";
+import { useKids, useMyProfile, useParentProfile, useSession } from "@/lib/app-store";
 import { supabase } from "@/integrations/supabase/client";
 import { LanguageToggle, useT } from "@/lib/i18n";
 
 export function RoleSwitcher() {
   const { session } = useSession();
   const profileQ = useParentProfile(!!session);
+  const myQ = useMyProfile(!!session);
   const kidsQ = useKids(profileQ.data?.id);
   const location = useLocation();
   const navigate = useNavigate();
   const t = useT();
 
   if (!session || location.pathname === "/auth") return null;
+  if (!myQ.data || myQ.data.role === "kid") return null;
 
   const kids = kidsQ.data ?? [];
   const parent = profileQ.data;

@@ -35,6 +35,7 @@ import {
   useKids,
   useMarkDelivered,
   useParentProfile,
+  useKidSelfRedirect,
   usePurchases,
   useRegeneratePin,
   useReviewFeed,
@@ -282,6 +283,7 @@ function ParentPage() {
   const qc = useQueryClient();
   const { session } = useSession();
   const profileQ = useParentProfile(!!session);
+  useKidSelfRedirect(!!session);
   const parentId = profileQ.data?.id;
   const kidsQ = useKids(parentId);
   const tasksQ = useTasks(parentId);

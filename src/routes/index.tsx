@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import {
   useParentProfile,
+  useKidSelfRedirect,
   useKids,
   useSession,
   useAllCompletions,
@@ -22,6 +23,7 @@ export const Route = createFileRoute("/")({
 function Index() {
   const { session } = useSession();
   const profileQ = useParentProfile(!!session);
+  const { isKid } = useKidSelfRedirect(!!session);
   const parent = profileQ.data;
   const kidsQ = useKids(parent?.id);
   const kids = kidsQ.data ?? [];
@@ -31,7 +33,7 @@ function Index() {
   const navigate = useNavigate();
   const t = useT();
 
-  const loading = profileQ.isLoading || kidsQ.isLoading;
+  const loading = isKid || profileQ.isLoading || kidsQ.isLoading;
 
   return (
     <div className="px-5 pt-6 pb-10">
