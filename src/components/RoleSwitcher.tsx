@@ -1,7 +1,7 @@
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { LogOut } from "lucide-react";
-import { useKids, useParentProfile, useSession } from "@/lib/app-store";
+import { useKids, useMyProfile, useParentProfile, useSession } from "@/lib/app-store";
 import { supabase } from "@/integrations/supabase/client";
 import { LanguageToggle, useT } from "@/lib/i18n";
 

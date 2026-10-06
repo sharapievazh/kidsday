@@ -31,7 +31,7 @@ function NotFoundComponent() {
   );
 }
 
-function ErrorComponent({ error }: { error: Error }) {
+function ErrorComponent({ error }: { error: unknown }) {
   console.error(error);
   return (
     <div className="flex min-h-screen items-center justify-center px-4 text-center">
