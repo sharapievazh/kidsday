@@ -12,7 +12,8 @@ import {
   useBuyReward,
   isMoneyReward,
   useKid,
-  useParentProfile,
+  useFamilyParentId,
+  useKidSelfRedirect,
   usePurchases,
   useRewards,
   useSession,
@@ -41,8 +42,8 @@ function KidPage() {
   const { lang } = useLang();
   const { kidId } = Route.useParams();
   const { session } = useSession();
-  const profileQ = useParentProfile(!!session);
-  const parentId = profileQ.data?.id;
+  const { familyParentId: parentId } = useFamilyParentId(!!session);
+  const { redirecting } = useKidSelfRedirect(!!session, kidId);
 
   const kidQ = useKid(kidId);
   const tasksQ = useTasks(parentId);
@@ -55,7 +56,7 @@ function KidPage() {
   const [tab, setTab] = useState<"tasks" | "rewards" | "progress">("tasks");
   const navigate = useNavigate();
 
-  if (kidQ.isLoading || tasksQ.isLoading) {
+  if (redirecting || kidQ.isLoading || tasksQ.isLoading || !parentId) {
     return <LoadingScreen />;
   }
   if (kidQ.error || !kidQ.data) throw notFound();
